@@ -1,0 +1,28 @@
+- converter:
+  - media:
+    - youtube:
+      - mp3
+      - flac
+      - mp4
+      - avi
+  - translator:
+    - english:
+      - french
+      - spanish
+    - french:
+      - english
+      - spanish
+- internet:
+  - web:
+    - url:
+      - urlshortener
+- security:
+  - data:
+    - encryptor:
+      - rsa
+      - dsa
+      - aes
+    - decryptor:
+      - rsa
+      - dsa
+      - aes
