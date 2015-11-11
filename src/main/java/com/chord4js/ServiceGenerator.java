@@ -27,27 +27,46 @@ public class ServiceGenerator {
 		
 		YamlReader reader = new YamlReader(new FileReader(new File(resource.toURI())));
 		
-		Object read = reader.read();
-		List<?> list = getListOfMaps(read);
+		List<?> list = (List<?>) reader.read();
 		
 		// create root node
 		BranchNode root = new BranchNode("");
 		
-		// call recursive method
-		processList(root, list);
+		try {
+			// call recursive method
+			processList(root, list);
+		} catch (ClassCastException e) {
+			System.err
+					.println("Invalid characters occurred. \"key: value\" pairs are invalid, use lists instead");
+			throw e;
+		}
 		
 	}
 	
 	private void processList(BranchNode root, List<?> list) {
 		System.out.println(list.size() + " " + list);
 		
+		// iterate over each element of the list
 		for (Object obj : list) {
+			
 			if (obj instanceof Map) {
-				// process map, recurse deeper, create branch node
-				String key = (String) ((Map) obj).keySet().iterator().next();
+				// this object is a map and has children
+				Map<?, ?> map = (Map<?, ?>) obj;
+				
+				// get the key, which is the name of a category. We only get the
+				// first element of the map since it should be the only one
+				String key = (String) map.keySet().iterator().next();
+				
+				// make an assertion that the map size should only ever be 1
+				assert map.size() == 1;
+				
+				// create a branch node, setting the name to the key and adding
+				// it to the root node
 				BranchNode branchNode = new BranchNode(key);
 				root.add(branchNode);
-				processList(branchNode, (List<?>) ((Map) obj).get(key));
+				
+				// recursively call this method passing it in the key's value
+				processList(branchNode, (List<?>) map.get(key));
 				
 			} else if (obj instanceof String) {
 				// process leaf node
@@ -56,12 +75,11 @@ public class ServiceGenerator {
 		}
 	}
 	
-	public List<Map<String, List>> getListOfMaps(Object object) {
-		return (List<Map<String, List>>) object;
-	}
-	
+	/**
+	 * The base class of the composite pattern. Store the name of this class.
+	 */
 	private static abstract class Node {
-		protected String name;
+		protected final String name;
 		
 		public Node(String name) {
 			this.name = name;
@@ -71,12 +89,21 @@ public class ServiceGenerator {
 			return name;
 		}
 		
-		public abstract boolean hasChildren();
+		/**
+		 * Get a list of the children nodes of this node. Return
+		 * <code>null</code> if none.
+		 * 
+		 * @return a list of the node's children, null if none
+		 */
+		public abstract List<Node> getChildren();
 	}
 	
+	/**
+	 * A node that contains children nodes
+	 */
 	private static class BranchNode extends Node {
 		
-		protected List<Node> children = new ArrayList();
+		protected List<Node> children = new ArrayList<Node>();
 		
 		public BranchNode(String name) {
 			super(name);
@@ -86,26 +113,28 @@ public class ServiceGenerator {
 			return children.stream().map(n -> n.getName()).collect(Collectors.toList());
 		}
 		
-		@Override
-		public boolean hasChildren() {
-			return true;
-		}
-		
 		public void add(Node node) {
 			children.add(node);
 		}
 		
+		@Override
+		public List<Node> getChildren() {
+			return children;
+		}
+		
 	}
 	
+	/**
+	 * A node that just contains a String
+	 */
 	private static class LeafNode extends Node {
 		
 		public LeafNode(String name) {
 			super(name);
 		}
 		
-		@Override
-		public boolean hasChildren() {
-			return false;
+		public List<Node> getChildren() {
+			return null;
 		}
 	}
 	
