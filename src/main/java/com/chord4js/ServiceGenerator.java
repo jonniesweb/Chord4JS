@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -14,10 +15,14 @@ import com.esotericsoftware.yamlbeans.YamlReader;
 /**
  * Read in a YAML file of example services and outputs a list of services with
  * generated providers.
+ * 
+ * TODO: Implement QOS using key: value pairs?
+ * 
  */
 public class ServiceGenerator {
 	
 	private Random random = new Random();
+	ArrayList<LeafNode> leafNodes = new ArrayList<LeafNode>();
 	
 	public static void main(String[] args) throws Exception {
 		new ServiceGenerator();
@@ -33,25 +38,45 @@ public class ServiceGenerator {
 		List<?> list = (List<?>) reader.read();
 		
 		// create root node
-		BranchNode root = new BranchNode("");
+		BranchNode root = new BranchNode(null, null);
 		
-		try {
-			// call recursive method
-			processList(root, list);
-		} catch (ClassCastException e) {
-			System.err
-					.println("Invalid characters occurred. \"key: value\" pairs are invalid, use lists instead");
-			throw e;
-		}
+		// call recursive method
+		processList(root, list);
 		
 		// create a bunch of random services
 		List<List<String>> services = new ArrayList<List<String>>();
 		for (int i = 0; i < 100; i++) {
-			ArrayList<String> service = createRandomService(root);
+			List<String> service = createRandomServiceFromLeafs(leafNodes);
 			services.add(service);
 			System.out.println(service);
 		}
+	}
+	
+	/**
+	 * Chooses a random leaf node, then traverses up the tree, building the
+	 * functional part of the service identifier.
+	 * 
+	 * @param leafNodes
+	 * @return
+	 */
+	private List<String> createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
+		LinkedList<String> service = new LinkedList<String>();
 		
+		// get a random leaf from the list
+		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));
+		
+		// ignore null nodes and the root node which doesn't have a name
+		while (currentNode != null && currentNode.getName() != null) {
+			
+			// add the name of the service to the beginning of the list (since
+			// we're going from child to root)
+			service.addFirst(currentNode.getName());
+			
+			// update the current node to the node's parent
+			currentNode = currentNode.getParent();
+		}
+		
+		return service;
 	}
 	
 	/**
@@ -64,16 +89,15 @@ public class ServiceGenerator {
 	 * more branches at deeper levels get chosen less often than services with
 	 * less branches at deeper levels.
 	 * 
-	 * TODO: Instead of going top-down, go bottom-up for better randomness
-	 * 
+	 * @deprecated An older way to create a service
 	 * @param root
 	 * @return
 	 */
-	private ArrayList<String> createRandomService(BranchNode root) {
+	private List<String> createRandomService(BranchNode root) {
 		// randomly walk down the tree from the root
 		
 		Node currentNode = root;
-		ArrayList<String> service = new ArrayList<String>();
+		List<String> service = new ArrayList<String>();
 		
 		while (currentNode.getChildren() != null) {
 			
@@ -92,33 +116,48 @@ public class ServiceGenerator {
 	}
 	
 	private void processList(BranchNode root, List<?> list) {
-		
-		// iterate over each element of the list
-		for (Object obj : list) {
+		try {
 			
-			if (obj instanceof Map) {
-				// this object is a map and has children
-				Map<?, ?> map = (Map<?, ?>) obj;
+			// iterate over each element of the list
+			for (Object obj : list) {
 				
-				// get the key, which is the name of a category. We only get the
-				// first element of the map since it should be the only one
-				String key = (String) map.keySet().iterator().next();
-				
-				// make an assertion that the map size should only ever be 1
-				assert map.size() == 1;
-				
-				// create a branch node, setting the name to the key and adding
-				// it to the root node
-				BranchNode branchNode = new BranchNode(key);
-				root.add(branchNode);
-				
-				// recursively call this method passing it in the key's value
-				processList(branchNode, (List<?>) map.get(key));
-				
-			} else if (obj instanceof String) {
-				// process leaf node
-				root.add(new LeafNode((String) obj));
+				if (obj instanceof Map) {
+					// this object is a map and has children
+					Map<?, ?> map = (Map<?, ?>) obj;
+					
+					// get the key, which is the name of a category. We only get
+					// the
+					// first element of the map since it should be the only one
+					String key = (String) map.keySet().iterator().next();
+					
+					// make an assertion that the map size should only ever be 1
+					assert map.size() == 1;
+					
+					// create a branch node, setting the name to the key and
+					// adding
+					// it to the root node
+					BranchNode branchNode = new BranchNode(root, key);
+					root.add(branchNode);
+					
+					// recursively call this method passing it in the key's
+					// value
+					processList(branchNode, (List<?>) map.get(key));
+					
+				} else if (obj instanceof String) {
+					String name = (String) obj;
+					// process leaf node
+					LeafNode node = new LeafNode(root, name);
+					root.add(node);
+					
+					// add the leafNode to the leafNode list
+					leafNodes.add(node);
+				}
 			}
+			
+		} catch (ClassCastException e) {
+			System.err
+					.println("Invalid characters occurred. \"key: value\" pairs are invalid, use lists instead");
+			throw e;
 		}
 	}
 	
@@ -127,8 +166,10 @@ public class ServiceGenerator {
 	 */
 	private static abstract class Node {
 		protected final String name;
+		private final BranchNode parent;
 		
-		public Node(String name) {
+		public Node(BranchNode parent, String name) {
+			this.parent = parent;
 			this.name = name;
 		}
 		
@@ -143,6 +184,10 @@ public class ServiceGenerator {
 		 * @return a list of the node's children, null if none
 		 */
 		public abstract List<Node> getChildren();
+		
+		public Node getParent() {
+			return parent;
+		}
 	}
 	
 	/**
@@ -152,8 +197,8 @@ public class ServiceGenerator {
 		
 		protected List<Node> children = new ArrayList<Node>();
 		
-		public BranchNode(String name) {
-			super(name);
+		public BranchNode(BranchNode parent, String name) {
+			super(parent, name);
 		}
 		
 		private List<String> getNamesOfChildren() {
@@ -176,8 +221,8 @@ public class ServiceGenerator {
 	 */
 	private static class LeafNode extends Node {
 		
-		public LeafNode(String name) {
-			super(name);
+		public LeafNode(BranchNode parent, String name) {
+			super(parent, name);
 		}
 		
 		public List<Node> getChildren() {
