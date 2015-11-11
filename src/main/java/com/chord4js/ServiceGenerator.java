@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
 /**
@@ -44,9 +45,9 @@ public class ServiceGenerator {
 		processList(root, list);
 		
 		// create a bunch of random services
-		List<List<String>> services = new ArrayList<List<String>>();
+		List<ServiceIdentifier> services = new ArrayList<ServiceIdentifier>();
 		for (int i = 0; i < 100; i++) {
-			List<String> service = createRandomServiceFromLeafs(leafNodes);
+			ServiceIdentifier service = createRandomServiceFromLeafs(leafNodes);
 			services.add(service);
 			System.out.println(service);
 		}
@@ -59,8 +60,9 @@ public class ServiceGenerator {
 	 * @param leafNodes
 	 * @return
 	 */
-	private List<String> createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
-		LinkedList<String> service = new LinkedList<String>();
+	private ServiceIdentifier createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
+		LinkedList<String> layers = new LinkedList<String>();
+		ServiceIdentifier service = new ServiceIdentifier();
 		
 		// get a random leaf from the list
 		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));
@@ -70,11 +72,19 @@ public class ServiceGenerator {
 			
 			// add the name of the service to the beginning of the list (since
 			// we're going from child to root)
-			service.addFirst(currentNode.getName());
+			layers.addFirst(currentNode.getName());
+			
+			// add QOS to ServiceIdentifier, if any
+			if (currentNode.getQos() != null) {
+				service.addQos(currentNode.getQos());
+			}
 			
 			// update the current node to the node's parent
 			currentNode = currentNode.getParent();
 		}
+		
+		// add the functional layers to the ServiceIdentifier object
+		service.setLayers(layers);
 		
 		return service;
 	}
@@ -115,7 +125,7 @@ public class ServiceGenerator {
 		return service;
 	}
 	
-	private void processList(BranchNode root, List<?> list) {
+	private void processList(BranchNode root, List<?> list) throws Exception {
 		try {
 			
 			// iterate over each element of the list
@@ -125,23 +135,39 @@ public class ServiceGenerator {
 					// this object is a map and has children
 					Map<?, ?> map = (Map<?, ?>) obj;
 					
-					// get the key, which is the name of a category. We only get
-					// the
-					// first element of the map since it should be the only one
-					String key = (String) map.keySet().iterator().next();
-					
 					// make an assertion that the map size should only ever be 1
-					assert map.size() == 1;
+					if (map.size() > 1) {
+						throw new YamlException("The map size should never be greater than 1. "
+								+ "Something is wrong with the yaml file");
+					}
+					
+					// get the key, which is the name of a category. We only get
+					// the first element of the map since it should be the only
+					// one
+					String key = (String) map.keySet().iterator().next();
+					Object value = map.get(key);
+					
+					if ("qos".equals(key)) {
+						// we're dealing with a QOS specification
+						String qos = (String) value;
+						System.out.println("qos " + qos);
+						
+						// parse and add the QOS specification to the parent
+						// node
+						root.addQos(qos);
+						
+						// continue to loop over other elements in the list
+						continue;
+					}
 					
 					// create a branch node, setting the name to the key and
-					// adding
-					// it to the root node
+					// adding it to the root node
 					BranchNode branchNode = new BranchNode(root, key);
 					root.add(branchNode);
 					
 					// recursively call this method passing it in the key's
 					// value
-					processList(branchNode, (List<?>) map.get(key));
+					processList(branchNode, (List<?>) value);
 					
 				} else if (obj instanceof String) {
 					String name = (String) obj;
@@ -154,7 +180,7 @@ public class ServiceGenerator {
 				}
 			}
 			
-		} catch (ClassCastException e) {
+		} catch (ClassCastException | YamlException e) {
 			System.err
 					.println("Invalid characters occurred. \"key: value\" pairs are invalid, use lists instead");
 			throw e;
@@ -168,9 +194,28 @@ public class ServiceGenerator {
 		protected final String name;
 		private final BranchNode parent;
 		
+		/**
+		 * Quality of Service attributes for this node and any of its children
+		 */
+		private List<String> qosList;
+		
 		public Node(BranchNode parent, String name) {
 			this.parent = parent;
 			this.name = name;
+		}
+		
+		public void addQos(String qos) {
+			
+			// lazy initialize qosList
+			if (qosList == null) {
+				qosList = new ArrayList<String>();
+			}
+			
+			qosList.add(qos);
+		}
+		
+		public List<String> getQos() {
+			return qosList;
 		}
 		
 		public String getName() {

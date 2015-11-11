@@ -6,6 +6,7 @@
       - mp4
       - avi
   - translator:
+    - qos: 99.9% accurate, 1 week, 2 week
     - english:
       - french
       - spanish
