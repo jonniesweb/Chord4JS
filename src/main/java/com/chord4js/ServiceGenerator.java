@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import com.esotericsoftware.yamlbeans.YamlReader;
@@ -15,6 +16,8 @@ import com.esotericsoftware.yamlbeans.YamlReader;
  * generated providers.
  */
 public class ServiceGenerator {
+	
+	private Random random = new Random();
 	
 	public static void main(String[] args) throws Exception {
 		new ServiceGenerator();
@@ -41,10 +44,54 @@ public class ServiceGenerator {
 			throw e;
 		}
 		
+		// create a bunch of random services
+		List<List<String>> services = new ArrayList<List<String>>();
+		for (int i = 0; i < 100; i++) {
+			ArrayList<String> service = createRandomService(root);
+			services.add(service);
+			System.out.println(service);
+		}
+		
+	}
+	
+	/**
+	 * Creates a list consisting of multiple layers that make up the functional
+	 * bits of the service identifier.
+	 * 
+	 * This implementation is a statistically bad way of generating services
+	 * since 1 down from the root node all have the same probability to be
+	 * chosen, and so forth for every other layer. This means that services with
+	 * more branches at deeper levels get chosen less often than services with
+	 * less branches at deeper levels.
+	 * 
+	 * TODO: Instead of going top-down, go bottom-up for better randomness
+	 * 
+	 * @param root
+	 * @return
+	 */
+	private ArrayList<String> createRandomService(BranchNode root) {
+		// randomly walk down the tree from the root
+		
+		Node currentNode = root;
+		ArrayList<String> service = new ArrayList<String>();
+		
+		while (currentNode.getChildren() != null) {
+			
+			// get a random child from the node
+			List<Node> children = currentNode.getChildren();
+			Node node = children.get(random.nextInt(children.size()));
+			
+			// add the newly found node's name to the services list
+			service.add(node.getName());
+			
+			// set the current node to this node in preparation for iterating
+			// over it again
+			currentNode = node;
+		}
+		return service;
 	}
 	
 	private void processList(BranchNode root, List<?> list) {
-		System.out.println(list.size() + " " + list);
 		
 		// iterate over each element of the list
 		for (Object obj : list) {
