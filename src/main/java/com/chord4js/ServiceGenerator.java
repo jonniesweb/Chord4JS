@@ -275,4 +275,24 @@ public class ServiceGenerator {
 		}
 	}
 	
+	/**
+	 * Create a random IP address.
+	 * 
+	 * @return
+	 */
+	private String getRandomIP() {
+		
+		int w = getRandomOctet();
+		int x = getRandomOctet();
+		int y = getRandomOctet();
+		int z = getRandomOctet();
+		
+		return w + "." + x + "." + y + "." + z;
+		
+	}
+	
+	private int getRandomOctet() {
+		return random.nextInt(254) + 1;
+	}
+	
 }
