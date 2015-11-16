@@ -6,19 +6,29 @@ import java.util.List;
 
 public class ServiceIdentifier {
 	
-	List<String> layers = new ArrayList<String>();
-	List<String> qos = new ArrayList<String>();
+	private List<String> layers = new ArrayList<String>();
+	private List<String> qos = new ArrayList<String>();
+	private String provider;
 	
-	public void addQos(List<String> qosList) {
-		qos.addAll(qosList);
+	public void addQos(String qos2) {
+		qos.add(qos2);
 	}
 	
-	public void setLayers(LinkedList<String> layers) {
+	public void setLayers(List<String> layers) {
 		this.layers = layers;
+	}
+	
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+	
+	public String getProvider() {
+		return provider;
+		
 	}
 	
 	@Override
 	public String toString() {
-		return "layers: " + layers + " qos: " + qos;
+		return layers + "" + provider + "" + qos;
 	}
 }

@@ -17,8 +17,6 @@ import com.esotericsoftware.yamlbeans.YamlReader;
  * Read in a YAML file of example services and outputs a list of services with
  * generated providers.
  * 
- * TODO: Implement QOS using key: value pairs?
- * 
  */
 public class ServiceGenerator {
 	
@@ -47,9 +45,10 @@ public class ServiceGenerator {
 		// create a bunch of random services
 		List<ServiceIdentifier> services = new ArrayList<ServiceIdentifier>();
 		for (int i = 0; i < 100; i++) {
-			ServiceIdentifier service = createRandomServiceFromLeafs(leafNodes);
-			services.add(service);
-			System.out.println(service);
+			ServiceIdentifierFactory service = createRandomServiceFromLeafs(leafNodes);
+			ServiceIdentifier identifier = service.createRandom(random);
+			services.add(identifier);
+			System.out.println(identifier);
 		}
 	}
 	
@@ -60,9 +59,9 @@ public class ServiceGenerator {
 	 * @param leafNodes
 	 * @return
 	 */
-	private ServiceIdentifier createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
+	private ServiceIdentifierFactory createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
 		LinkedList<String> layers = new LinkedList<String>();
-		ServiceIdentifier service = new ServiceIdentifier();
+		ServiceIdentifierFactory service = new ServiceIdentifierFactory();
 		
 		// get a random leaf from the list
 		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));
@@ -273,26 +272,6 @@ public class ServiceGenerator {
 		public List<Node> getChildren() {
 			return null;
 		}
-	}
-	
-	/**
-	 * Create a random IP address.
-	 * 
-	 * @return
-	 */
-	private String getRandomIP() {
-		
-		int w = getRandomOctet();
-		int x = getRandomOctet();
-		int y = getRandomOctet();
-		int z = getRandomOctet();
-		
-		return w + "." + x + "." + y + "." + z;
-		
-	}
-	
-	private int getRandomOctet() {
-		return random.nextInt(254) + 1;
 	}
 	
 }
