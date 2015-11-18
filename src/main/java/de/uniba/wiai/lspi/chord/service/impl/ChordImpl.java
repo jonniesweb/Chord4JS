@@ -64,14 +64,14 @@ import de.uniba.wiai.lspi.util.logging.Logger;
  * @author Karsten Loesing
  * @version 1.0.5
  */
-public final class Chord4S implements Chord, Report, AsynChord {
+public final class ChordImpl implements Chord, Report, AsynChord {
 
 	/**
 	 * Number of threads to allow concurrent invocations of asynchronous
-	 * methods. e.g. {@link Chord4S#insertAsync(Key, Serializable)}.
+	 * methods. e.g. {@link ChordImpl#insertAsync(Key, Serializable)}.
 	 */
 	private static final int ASYNC_CALL_THREADS = Integer.parseInt(System
-			.getProperty("de.uniba.wiai.lspi.chord.service.impl.ChordImpl.AsyncThread.no"));
+			.getProperty(ChordImpl.class.getName() + ".AsyncThread.no"));
 
 	/**
 	 * Time in seconds until the stabilize task is started for the first time.
@@ -201,15 +201,15 @@ public final class Chord4S implements Chord, Report, AsynChord {
 	 * Creates a new instance of ChordImpl which initially is disconnected.
 	 * Constructor is hidden. Only constructor.
 	 */
-	public Chord4S() {
-		this.logger = Logger.getLogger(Chord4S.class.getName()
+	public ChordImpl() {
+		this.logger = Logger.getLogger(ChordImpl.class.getName()
 				+ ".unidentified");
 		this.logger.debug("Logger initialized.");
 
 		this.maintenanceTasks = new ScheduledThreadPoolExecutor(3,
 				new ChordThreadFactory("MaintenanceTaskExecution"));
 		this.asyncExecutor = Executors.newFixedThreadPool(
-				Chord4S.ASYNC_CALL_THREADS, new ChordThreadFactory(
+				ChordImpl.ASYNC_CALL_THREADS, new ChordThreadFactory(
 						"AsynchronousExecution"));
 		this.hashFunction = HashFunction.getHashFunction();
 		logger.info("ChordImpl initialized!");
@@ -273,7 +273,7 @@ public final class Chord4S implements Chord, Report, AsynChord {
 		}
 
 		this.localID = nodeID;
-		this.logger = Logger.getLogger(Chord4S.class.getName() + "."
+		this.logger = Logger.getLogger(ChordImpl.class.getName() + "."
 				+ this.localID);
 	}
 
@@ -401,20 +401,20 @@ public final class Chord4S implements Chord, Report, AsynChord {
 		// start thread which periodically stabilizes with successor
 		this.maintenanceTasks.scheduleWithFixedDelay(new StabilizeTask(
 				this.localNode, this.references, this.entries),
-				Chord4S.STABILIZE_TASK_START,
-				Chord4S.STABILIZE_TASK_INTERVAL, TimeUnit.SECONDS);
+				ChordImpl.STABILIZE_TASK_START,
+				ChordImpl.STABILIZE_TASK_INTERVAL, TimeUnit.SECONDS);
 
 		// start thread which periodically attempts to fix finger table
 		this.maintenanceTasks.scheduleWithFixedDelay(new FixFingerTask(
 				this.localNode, this.getID(), this.references),
-				Chord4S.FIX_FINGER_TASK_START,
-				Chord4S.FIX_FINGER_TASK_INTERVAL, TimeUnit.SECONDS);
+				ChordImpl.FIX_FINGER_TASK_START,
+				ChordImpl.FIX_FINGER_TASK_INTERVAL, TimeUnit.SECONDS);
 
 		// start thread which periodically checks whether predecessor has
 		// failed
 		this.maintenanceTasks.scheduleWithFixedDelay(new CheckPredecessorTask(
-				this.references), Chord4S.CHECK_PREDECESSOR_TASK_START,
-				Chord4S.CHECK_PREDECESSOR_TASK_INTERVAL, TimeUnit.SECONDS);
+				this.references), ChordImpl.CHECK_PREDECESSOR_TASK_START,
+				ChordImpl.CHECK_PREDECESSOR_TASK_INTERVAL, TimeUnit.SECONDS);
 	}
 
 	public final void join(URL bootstrapURL) throws ServiceException {
@@ -634,9 +634,9 @@ public final class Chord4S implements Chord, Report, AsynChord {
 			if (newReference != null && !newReference.equals(this.localNode)
 					&& !this.references.containsReference(newReference)) {
 
-				Chord4S.this.references.addReference(newReference);
-				if (Chord4S.this.logger.isEnabledFor(DEBUG)) {
-					Chord4S.this.logger.debug("Added reference on "
+				ChordImpl.this.references.addReference(newReference);
+				if (ChordImpl.this.logger.isEnabledFor(DEBUG)) {
+					ChordImpl.this.logger.debug("Added reference on "
 							+ newReference.getNodeID() + " which responded to "
 							+ "ping request");
 				}

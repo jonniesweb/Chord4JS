@@ -63,7 +63,7 @@ public final class NodeImpl extends Node {
 	/**
 	 * Reference on local node.
 	 */
-	private Chord4S impl;
+	private ChordImpl impl;
 
 	/**
 	 * Object logger.
@@ -111,7 +111,7 @@ public final class NodeImpl extends Node {
 	 * @throws IllegalArgumentException
 	 *             If any of the parameter has value <code>null</code>.
 	 */
-	NodeImpl(Chord4S impl, ID nodeID, URL nodeURL, References references,
+	NodeImpl(ChordImpl impl, ID nodeID, URL nodeURL, References references,
 			Entries entries) {
 
 		if (impl == null || nodeID == null || nodeURL == null

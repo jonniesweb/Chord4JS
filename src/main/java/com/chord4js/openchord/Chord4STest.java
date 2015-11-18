@@ -6,9 +6,10 @@ import java.util.Set;
 
 import de.uniba.wiai.lspi.chord.console.command.entry.Key;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
-import de.uniba.wiai.lspi.chord.service.impl.Chord4S;
+import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 
 /**
  * A demo of starting, inserting, retrieving and deleting elements of a Chord
@@ -29,7 +30,7 @@ public class Chord4STest {
 			PropertiesLoader.loadPropertyFile();
 			
 			// create and start the first node
-			Chord4S chord = new Chord4S();
+			ChordImpl chord = new ChordImpl();
 			bootstrapURL = getNextURL();
 			chord.create(bootstrapURL);
 			
