@@ -1,4 +1,4 @@
-package com.chord4js.service;
+package com.chord4js.openchord;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
