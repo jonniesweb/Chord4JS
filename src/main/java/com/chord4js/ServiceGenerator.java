@@ -43,10 +43,10 @@ public class ServiceGenerator {
 		processList(root, list);
 		
 		// create a bunch of random services
-		List<ServiceIdentifier> services = new ArrayList<ServiceIdentifier>();
+		List<Service> services = new ArrayList<Service>();
 		for (int i = 0; i < 100; i++) {
-			ServiceIdentifierFactory service = createRandomServiceFromLeafs(leafNodes);
-			ServiceIdentifier identifier = service.createRandom(random);
+			ServiceFactory service = createRandomServiceFromLeafs(leafNodes);
+			Service identifier = service.createRandom(random);
 			services.add(identifier);
 			System.out.println(identifier);
 		}
@@ -59,9 +59,9 @@ public class ServiceGenerator {
 	 * @param leafNodes
 	 * @return
 	 */
-	private ServiceIdentifierFactory createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
+	private ServiceFactory createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
 		LinkedList<String> layers = new LinkedList<String>();
-		ServiceIdentifierFactory service = new ServiceIdentifierFactory();
+		ServiceFactory service = new ServiceFactory();
 		
 		// get a random leaf from the list
 		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));

@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-public class ServiceIdentifierFactory {
+public class ServiceFactory {
 	
 	List<String> layers = new ArrayList<String>();
 	List<String> qos = new ArrayList<String>();
@@ -23,8 +23,8 @@ public class ServiceIdentifierFactory {
 		return "layers: " + layers + " qos: " + qos;
 	}
 	
-	public ServiceIdentifier createRandom(Random random) {
-		ServiceIdentifier identifier = new ServiceIdentifier();
+	public Service createRandom(Random random) {
+		Service identifier = new Service();
 		identifier.setLayers(layers);
 		
 		if (qos.size() > 0) {

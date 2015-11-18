@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ServiceIdentifier {
+public class Service {
 	
 	private List<String> layers = new ArrayList<String>();
 	private List<String> qos = new ArrayList<String>();
