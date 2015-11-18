@@ -25,6 +25,7 @@ public class Chord4STest {
 		try {
 			
 			// setup properties
+			System.setProperty("chord.properties.file", "config/chord4S.properties");
 			PropertiesLoader.loadPropertyFile();
 			
 			// create and start the first node

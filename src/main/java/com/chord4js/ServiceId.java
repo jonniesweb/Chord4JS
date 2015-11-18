@@ -9,12 +9,12 @@ import de.uniba.wiai.lspi.chord.service.Key;
 public class ServiceId {
   public static final int kPartsSemantic  = 4;
   public static final int kPartsProvider  = 1;
-  public static final int kPartsAll       = kNamePartsSemantic + kNamePartsProvider;
+  public static final int kPartsAll       = kPartsSemantic + kPartsProvider;
   
-  public final int[] hashedParts = new int[kNamePartsAll];
+  public final int[] hashedParts = new int[kPartsAll];
   
   ServiceId(final String[] semanticName) throws Exception {
-    if (semanticName.length > kNamePartsSemantic)
+    if (semanticName.length > kPartsSemantic)
       throw new Exception("Semantic name has too many parts");
     
     for (int i = 0; i < semanticName.length; ++i)
