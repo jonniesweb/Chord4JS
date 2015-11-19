@@ -1,5 +1,6 @@
 package com.chord4js;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,14 +12,28 @@ public class Service {
 	private final List<String> qos;
 	
 	/**
-	 * Create a Service with the given ProviderId and QoS information.
+	 * Create a Service with the given ProviderId and many QoS values.
+	 * 
+	 * @param providerId
+	 * @param qosList
+	 */
+	public Service(ProviderId providerId, List<String> qosList) {
+		this.providerId = providerId;
+		this.qos = qosList;
+		
+	}
+	
+	/**
+	 * Create a Service with the given ProviderId and one Qos value.
 	 * 
 	 * @param providerId
 	 * @param qos
 	 */
-	public Service(ProviderId providerId, List<String> qos) {
+	public Service(ProviderId providerId, String qos) {
 		this.providerId = providerId;
-		this.qos = qos;
+		ArrayList<String> qosList = new ArrayList<String>();
+		qosList.add(qos);
+		this.qos = qosList;
 		
 	}
 	
@@ -40,7 +55,7 @@ public class Service {
 	public ProviderId getProviderId() {
 		return providerId;
 	}
-
+	
 	public List<String> getQos() {
 		return qos;
 	}
