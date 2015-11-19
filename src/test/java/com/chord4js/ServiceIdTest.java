@@ -1,9 +1,8 @@
 package com.chord4js;
 
-import static com.chord4js.Service.*;
+import static com.chord4js.ServiceId.*;
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,10 +16,10 @@ public class ServiceIdTest {
 		String hashedService = createServiceHashFromLayers(layers.toArray(new String[] {}));
 		
 		// verify size of hash is correct
-		assertEquals(TOTAL_LAYERS * SHA1_LENGTH, hashedService.length());
+		assertEquals(kPartsAll * HASH_LENGTH, hashedService.length());
 		
 		// verify data is correctly hashed
-		assertEquals(hash(layers.get(0)), hashedService.substring(0, SHA1_LENGTH));
+		assertEquals(hash(layers.get(0)), hashedService.substring(0, HASH_LENGTH));
 		
 	}
 	
@@ -37,8 +36,8 @@ public class ServiceIdTest {
 		String hashedIdentifier = createServiceHashFromLayers(layers.toArray(new String[] {}));
 		
 		// verify that 4th hash position is an empty layer, padded with zeroes
-		String hash = hashedIdentifier.substring(SHA1_LENGTH * 3, SHA1_LENGTH * 4);
-		assertEquals(EMPTY_LAYER, hash);
+		String hash = hashedIdentifier.substring(HASH_LENGTH * 3, HASH_LENGTH * 4);
+		assertEquals(EMPTY_PART_HASH, hash);
 		
 	}
 	
