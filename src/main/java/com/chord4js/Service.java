@@ -10,16 +10,17 @@ import de.uniba.wiai.lspi.chord.service.Key;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 
 /**
- * A service identifier that provides a functional description of the service
- * and the location (provider) of that service. Quality-of-service information
- * is also kept.
+ * A Service contains a ProviderId with Quality-of-Service information.
  * 
- * <br><br>
- * We assume that a service identifier has at least 1 and at most
+ * <br>
+ * <br>
+ * We assume that a service has at least 1 and at most
  * <code>{@link #FUNCTIONAL_LAYERS}</code> worth of functional layers and 1
  * provider layer.
  */
 public class Service implements Key {
+	
+	private final ProviderId providerId;
 	
 	public static final int FUNCTIONAL_LAYERS = 4;
 	public static final int PROVIDER_LAYERS = 1;
@@ -42,6 +43,15 @@ public class Service implements Key {
 	private List<String> layers = new ArrayList<String>();
 	private List<String> qos = new ArrayList<String>();
 	private String provider;
+	
+	/**
+	 * 
+	 * @param providerId
+	 */
+	public Service(ProviderId providerId) {
+		this.providerId = providerId;
+		
+	}
 	
 	public void addQos(String qos2) {
 		qos.add(qos2);
@@ -76,17 +86,13 @@ public class Service implements Key {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public String getHashedIdentifier() {
+	public String getHashedService() {
 		int layerSize = layers.size();
 		int missingLayers = FUNCTIONAL_LAYERS - layerSize;
 		if (layerSize == 0) {
 			throw new IllegalArgumentException(
 					"Not enough functional bits to construct data identifier");
 		}
-		
-		// TODO: assume 5 parts to service identifier, pad sections with zeroes
-		// if no functional layer exists. Always put provider bits as last
-		// section
 		
 		// append all layers to the StringBuilder, hashing them at the same time
 		// according to section 3.1 of the paper. The hashing algorithm outputs
@@ -111,7 +117,11 @@ public class Service implements Key {
 	}
 	
 	public byte[] getBytes() {
-		return getHashedIdentifier().getBytes();
+		return getHashedService().getBytes();
+	}
+	
+	public ProviderId getProviderId() {
+		return providerId;
 	}
 	
 }

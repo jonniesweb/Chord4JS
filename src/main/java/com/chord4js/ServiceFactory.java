@@ -24,7 +24,7 @@ public class ServiceFactory {
 	}
 	
 	public Service createRandom(Random random) {
-		Service identifier = new Service();
+		Service identifier = new Service(null);
 		identifier.setLayers(layers);
 		
 		if (qos.size() > 0) {
