@@ -38,6 +38,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.chord4js.QoSConstraints;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
 import de.uniba.wiai.lspi.chord.com.Entry;
@@ -368,9 +370,10 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Set<Entry> retrieveEntries(ID id)
+	public final Set<Entry> retrieveEntries(ID.IdSpan s, QoSConstraints c, int amount)
 			throws CommunicationException {
-
+	  if (amount <= 0) return new HashSet<>();
+	  
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
 		if (this.references.getPredecessor() != null

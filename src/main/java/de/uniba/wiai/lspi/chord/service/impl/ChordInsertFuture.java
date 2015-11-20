@@ -30,6 +30,8 @@ package de.uniba.wiai.lspi.chord.service.impl;
 import java.io.Serializable;
 import java.util.concurrent.Executor;
 
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.ChordFuture;
 import de.uniba.wiai.lspi.chord.service.Key;
@@ -58,18 +60,16 @@ class ChordInsertFuture extends ChordFutureImpl {
 	/**
 	 * The entry to insert. 
 	 */
-	private Serializable entry;
+	private Service svc;
 
 	/**
 	 * 
 	 * @param c The instance of chord used for the invocation represented by this. 
-	 * @param k The key used for the insertion. 
 	 * @param entry The entry to insert.
 	 */
-	private ChordInsertFuture(Chord c, Key k, Serializable entry) {
+	private ChordInsertFuture(Chord c, Service s) {
 		this.chord = c;
-		this.key = k;
-		this.entry = entry;
+		this.svc = s;
 	}
 
 	/**
@@ -90,23 +90,18 @@ class ChordInsertFuture extends ChordFutureImpl {
 	 *            The entry to be inserted.
 	 * @return Instance of this class.
 	 */
-	final static ChordInsertFuture create(Executor exec, Chord c, Key k,
-			Serializable entry) {
+	final static ChordInsertFuture create(Executor exec, Chord c, Service svc) {
 
 		if (c == null) {
 			throw new IllegalArgumentException(
 					"ChordInsertFuture: chord instance must not be null!");
 		}
-		if (k == null) {
-			throw new IllegalArgumentException(
-					"ChordInsertFuture: key must not be null!");
-		}
-		if (entry == null) {
+		if (svc == null) {
 			throw new IllegalArgumentException(
 					"ChordInsertFuture: entry must not be null!");
 		}
 
-		ChordInsertFuture f = new ChordInsertFuture(c, k, entry);
+		ChordInsertFuture f = new ChordInsertFuture(c, svc);
 		exec.execute(f.getTask());
 		return f;
 	}
@@ -116,7 +111,7 @@ class ChordInsertFuture extends ChordFutureImpl {
 	 * @return A Runnable that executes the operation associated with this. 
 	 */
 	private final Runnable getTask() {
-		return new InsertTask(this.chord, this.key, this.entry);
+		return new InsertTask(this.chord, svc);
 	}
 
 	/**
@@ -136,28 +131,22 @@ class ChordInsertFuture extends ChordFutureImpl {
 		/**
 		 * The key used for the insertion. 
 		 */
-		private Key key;
+		private Service svc;
 
-		/**
-		 * The entry to insert. 
-		 */
-		private Serializable entry;
-		
 		/**
 		 * Private constructor. 
 		 * @param chord 
 		 * @param key 
 		 * @param entry 
 		 */
-		InsertTask(Chord chord, Key key, Serializable entry){
+		InsertTask(Chord chord, Service s){
 			this.chord = chord; 
-			this.key = key; 
-			this.entry = entry; 
+			this.svc = s; 
 		}
 		
 		public void run() {
 			try {
-				this.chord.insert(this.key, this.entry);
+				this.chord.insert(svc);
 			} catch (Throwable t) {
 				setThrowable(t);
 			}

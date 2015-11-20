@@ -30,6 +30,9 @@ package de.uniba.wiai.lspi.chord.service;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 
@@ -219,7 +222,7 @@ public interface Chord {
 	 *             Thrown if insertion failed. The effect of the insertion
 	 *             operation is undefined if this exception occurs.
 	 */
-	public abstract void insert(Key key, Serializable object)
+	public abstract void insert(Service svc)
 			throws ServiceException;
 
 	/**
@@ -249,7 +252,7 @@ public interface Chord {
 	 *             Thrown if deletion failed. The effect of the delete operation
 	 *             is undefined if this exception occurs.
 	 */
-	public abstract void remove(Key key, Serializable object)
+	public abstract void remove(ProviderId svcId)
 			throws ServiceException;
 
 }

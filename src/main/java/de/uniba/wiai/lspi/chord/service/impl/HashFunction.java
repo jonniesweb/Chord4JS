@@ -127,7 +127,7 @@ final class HashFunction {
 		synchronized (this.messageDigest) {
 			this.messageDigest.reset();
 			this.messageDigest.update(testBytes);
-			return new ID(this.messageDigest.digest());
+			return ID.NodeId(this.messageDigest.digest());
 		}
 	}
 

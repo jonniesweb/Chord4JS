@@ -30,6 +30,8 @@ package de.uniba.wiai.lspi.chord.com;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.QoSConstraints;
+
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 
@@ -209,7 +211,7 @@ public abstract class Node {
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract Set<Entry> retrieveEntries(ID id)
+	public abstract Set<Entry> retrieveEntries(ID.IdSpan s, QoSConstraints c, int amount)
 			throws CommunicationException;
 
 	/**

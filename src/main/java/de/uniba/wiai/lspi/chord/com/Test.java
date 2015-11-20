@@ -158,7 +158,7 @@ public class Test {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-			this.nodeID = new ID(this.nodeURL.toString().getBytes());
+			nodeID = ID.NodeId(nodeURL.toString().getBytes());
 		}
 
 		@Override

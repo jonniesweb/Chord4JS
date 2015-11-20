@@ -28,6 +28,10 @@
 package de.uniba.wiai.lspi.chord.data;
 
 import java.io.Serializable;
+import java.util.BitSet;
+
+import com.chord4js.ProviderId;
+import com.chord4js.ServiceId;
 
 /**
  * Identifier for nodes and user-defined objects. New instances of this class
@@ -42,61 +46,50 @@ import java.io.Serializable;
  * @author Sven Kaffille, Karsten Loesing
  * @version 1.0.5
  */
-public final class ID implements Comparable<ID>, Serializable {
-
+public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6860626236168125168L;
+	
+	// Expected total network size. This is important for calc'ing the ideal length
+  // for the provider bits.
+  public static final int kNetworkSizeExpected = 100000;
+  // Maximum number of providers for a single semantic ident
+  public static final int kProviderLimit       = 1024;
+  public static final int kSemanticPartBitLen  = 6;
+  public static final int kSemanticTotalBitLen = kSemanticPartBitLen * ServiceId.kPartsSemantic;
+  public static final int kProviderBitLen      = ProviderMinimumBitLen();
+  public static final int kTotalBitLen         = kSemanticTotalBitLen + kProviderBitLen;
+  
+  private static final ID idMin; // All 0 ID
+  private static final ID idMax; // All 1 ID
+  
+  // From section 4.2 in paper:
+  //   providerBitLen >= log2((numProviderMax - 1) / nodeNum * 2^semanticBitLen)
+  // Which rewrites to:
+  //   providerBitLen >= log2(numProviderMax - 1) + log2(2^semanticBitLen / nodeNum)
+  //   providerBitLen >= log2(numProviderMax - 1) + semanticBitLen - log2(nodeNum)
+  private static int ProviderMinimumBitLen() {
+    final double lenMin  = log2(kProviderLimit - 1  )
+                         - log2(kNetworkSizeExpected)
+                         + (double)kSemanticTotalBitLen;
+    return (int)Math.ceil(lenMin);
+  }
 
-	private static final int HEX = 2;
+  // Math has no log2.
+  private static double log2(double x) { return Math.log10(x) / Math.log10(2); }
 
-	private static final int DEC = 1;
-
-	private static final int BIN = 0;
-
-	/**
-	 * The representation of an id returned as String when {@link #toString()}
-	 * is invoked. Is intialized with help of property
-	 * <code>de.uniba.wiai.lspi.chord.data.ID.displayed.representation</code>.
-	 * Possible values: <br/><br/>
-	 * 
-	 * <code>0 = BIN</code>, binary<br/> <code>1 = DEC</code>, decimal<br/>
-	 * <code>2 = HEX</code>, hexadecimal<br/>
-	 */
-	private static int displayedRepresentation = HEX;
-
-	// static initializer for displayedRepresentation
-	static {
-		String property = System.getProperty(ID.class.getName()
-				+ ".displayed.representation");
-
-		if (property != null && property.length() > 0) {
-			displayedRepresentation = Integer.parseInt(property);
-		}
-	}
-
-	/**
-	 * The number of (highest) bytes of an id returned as String when
-	 * {@link #toString()} is invoked. Is intialized with help of property
-	 * <code>de.uniba.wiai.lspi.chord.data.ID.number.of.displayed.bytes</code>.
-	 */
-	private static int numberOfDisplayedBytes = Integer.MAX_VALUE;
-
-	// static initializer for numberOfDisplayedBytes
-	static {
-		String numberProperty = System.getProperty(ID.class.getName()
-				+ ".number.of.displayed.bytes");
-
-		if (numberProperty != null && numberProperty.length() > 0) {
-			numberOfDisplayedBytes = Integer.parseInt(numberProperty);
-		}
-	}
+  static {
+    idMin = new ID(new BitSet(kTotalBitLen));
+    idMax = new ID(new BitSet(kTotalBitLen));
+    idMax.id.set(0, idMax.id.length());
+  }
 
 	/**
-	 * The bytes representing the id.
+	 * The bits representing the id. Big endian. (provider bits are low)
 	 */
-	private final byte[] id;
+	public final BitSet id;
 
 	/**
 	 * Creates a new ID consisting of the given byte[] array. The ID is assumed
@@ -106,42 +99,41 @@ public final class ID implements Comparable<ID>, Serializable {
 	 * @param id1
 	 *            Byte array containing the ID.
 	 */
-	public ID(byte[] id1) {
-		this.id = new byte[id1.length];
-		System.arraycopy(id1, 0, this.id, 0, id1.length);
+
+	public ID(ProviderId x) {
+    id = new BitSet(kTotalBitLen);
+    throw new Exception("Implement reduction from full hash to lower N bits for each part (highest entropy)");
+  }
+	
+	public static class IdSpan {
+	  public ID bgn, endIncl;
+	  protected IdSpan(BitSet a, BitSet b) { bgn = new ID(a); endIncl = new ID(b); }
 	}
-
-	/**
-	 * Representation of this as a String.
-	 */
-	private transient String stringRepresentation = null;
-
-	/**
-	 * Returns a string of the decimal representation of this ID, including
-	 * leading zeros.
-	 * 
-	 * @return Decimal string of ID
-	 */
-	public final String toString() {
-		if (this.stringRepresentation == null) {
-			int rep = ID.displayedRepresentation;
-			switch (rep) {
-			case 0:
-				this.stringRepresentation = this
-				.toBinaryString(ID.numberOfDisplayedBytes);
-				break; 
-			case 1:
-				this.stringRepresentation = this
-				.toDecimalString(ID.numberOfDisplayedBytes);
-				break; 
-			default:
-				this.stringRepresentation = this
-						.toHexString(ID.numberOfDisplayedBytes);
-			}
-
-		}
-		return this.stringRepresentation;
+	
+	public static IdSpan ServiceId(ServiceId svcId) {
+	  throw new Exception("Implement wildcard span calc)");
+	  int numParts;
+	  for (numParts = 0; numParts < svcId.getHashedParts().length; ++numParts)
+	    if (svcId.getHashedParts()[numParts] == null) break;
+	  
+	  
+    BitSet a = new BitSet(kTotalBitLen);
+    BitSet b = new BitSet(kTotalBitLen);
+    return new IdSpan(a , b);
 	}
+	
+	public static ID NodeId(final byte[] blob) {
+	  final BitSet id = new BitSet(kTotalBitLen);
+	  throw new Exception("Implement similar reduction here");
+	  return new ID(id);
+  }
+
+	private ID(BitSet x) { id = x; }
+	
+	@Override
+	public ID clone() { return new ID((BitSet)id.clone()); }
+	
+	public final String toString() { return toHexString(); }
 
 	/**
 	 * Returns a string of the hexadecimal representation of the first
@@ -154,12 +146,13 @@ public final class ID implements Comparable<ID>, Serializable {
 	public final String toHexString(int numberOfBytes) {
 
 		// number of displayed bytes must be in interval [1, this.id.length]
-		int displayBytes = Math.max(1, Math.min(numberOfBytes, this.id.length));
+	  final byte[] ary = this.id.toByteArray();
+		int displayBytes = Math.max(1, Math.min(numberOfBytes, ary.length));
 
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < displayBytes; i++) {
 
-			String block = Integer.toHexString(this.id[i] & 0xff).toUpperCase();
+			String block = Integer.toHexString(ary[i] & 0xff).toUpperCase();
 
 			// add leading zero to block, if necessary
 			if (block.length() < 2) {
@@ -178,78 +171,7 @@ public final class ID implements Comparable<ID>, Serializable {
 	 * @return Hex string of ID
 	 */
 	public final String toHexString() {
-		return this.toHexString(this.id.length);
-	}
-
-	/**
-	 * Returns a string of the decimal representation of the first
-	 * <code>n</code> bytes of this ID, including leading zeros.
-	 * 
-	 * @param numberOfBytes
-	 * 
-	 * @return Hex string of ID
-	 */
-	public final String toDecimalString(int numberOfBytes) {
-
-		// number of displayed bytes must be in interval [1, this.id.length]
-		int displayBytes = Math.max(1, Math.min(numberOfBytes, this.id.length));
-
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < displayBytes; i++) {
-
-			String block = Integer.toString(this.id[i] & 0xff);
-
-			result.append(block + " ");
-		}
-		return result.toString();
-	}
-
-	/**
-	 * Returns a string of the decimal representation of this ID, including
-	 * leading zeros.
-	 * 
-	 * @return Decimal string of ID
-	 */
-	public final String toDecimalString() {
-		return this.toDecimalString(this.id.length);
-	}
-
-	/**
-	 * Returns a string of the binary representation of the first <code>n</code>
-	 * bytes of this ID, including leading zeros.
-	 * 
-	 * @param numberOfBytes
-	 * 
-	 * @return Hex string of ID
-	 */
-	public final String toBinaryString(int numberOfBytes) {
-
-		// number of displayed bytes must be in interval [1, this.id.length]
-		int displayBytes = Math.max(1, Math.min(numberOfBytes, this.id.length));
-
-		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < displayBytes; i++) {
-
-			String block = Integer.toBinaryString(this.id[i] & 0xff);
-
-			// add leading zero to block, if necessary
-			while (block.length() < 8) {
-				block = "0" + block;
-			}
-
-			result.append(block + " ");
-		}
-		return result.toString();
-	}
-
-	/**
-	 * Returns a string of the binary representation of this ID, including
-	 * leading zeros.
-	 * 
-	 * @return Binary string of ID
-	 */
-	public final String toBinaryString() {
-		return this.toBinaryString(this.id.length);
+		return this.toHexString(Integer.MAX_VALUE);
 	}
 
 	/**
@@ -260,7 +182,7 @@ public final class ID implements Comparable<ID>, Serializable {
 	 * @return Length of this ID measured in bits.
 	 */
 	public final int getLength() {
-		return this.id.length * 8;
+		return this.id.length();
 	}
 
 	/**
@@ -273,39 +195,25 @@ public final class ID implements Comparable<ID>, Serializable {
 	 * @return ID which is 2^powerOfTwo bits greater than the current ID modulo
 	 *         the maximum ID.
 	 */
-	public final ID addPowerOfTwo(int powerOfTwo) {
-
-		if (powerOfTwo < 0 || powerOfTwo >= (this.id.length * 8)) {
-			throw new IllegalArgumentException(
-					"The power of two is out of range! It must be in the interval "
-							+ "[0, length-1]");
-		}
-
-		// copy ID
-		byte[] copy = new byte[this.id.length];
-		System.arraycopy(this.id, 0, copy, 0, this.id.length);
-
-		// determine index of byte and the value to be added
-		int indexOfByte = this.id.length - 1 - (powerOfTwo / 8);
-		byte[] toAdd = { 1, 2, 4, 8, 16, 32, 64, -128 };
-		byte valueToAdd = toAdd[powerOfTwo % 8];
-		byte oldValue;
-
-		do {
-			// add value
-			oldValue = copy[indexOfByte];
-			copy[indexOfByte] += valueToAdd;
-
-			// reset value to 1 for possible overflow situation
-			valueToAdd = 1;
-		}
-		// check for overflow - occurs if old value had a leading one, i.e. it
-		// was negative, and new value has a leading zero, i.e. it is zero or
-		// positive; indexOfByte >= 0 prevents running out of the array to the
-		// left in case of going over the maximum of the ID space
-		while (oldValue < 0 && copy[indexOfByte] >= 0 && indexOfByte-- > 0);
-
-		return new ID(copy);
+	public final ID addPowerOfTwo(final int powerOfTwo) {
+	  if ((powerOfTwo < 0) || (powerOfTwo >= id.length())) {
+      throw new IllegalArgumentException(
+          "The power of two is out of range! It must be in the interval [0, length-1]");
+    }
+	  
+	  ID copy = clone();
+	  
+    // perform hand-rolled binary addition. recall that the bitset is defined as big-endian.
+	  // i.e. (idx 0 is highest bit)
+	  for (int i = powerOfTwo; i < id.length(); ++i) {
+	    final int idx = id.length() - i - 1;
+	    copy.id.flip(idx);
+	    
+	    // 'twas zero previous. We're done.
+	    if (copy.id.get(idx)) break;
+	  }
+	  
+	  return copy;
 	}
 
 	/**
@@ -335,39 +243,28 @@ public final class ID implements Comparable<ID>, Serializable {
 	 *         the given object, respectively.
 	 */
 	public final int compareTo(ID otherKey) throws ClassCastException {
-
-		if (this.getLength() != otherKey.getLength()) {
+	  
+		if (id.length() != otherKey.id.length()) {
 			throw new ClassCastException(
 					"Only ID objects with same length can be "
-							+ "compared! This ID is " + this.id.length
+							+ "compared! This ID is " + id.length()
 							+ " bits long while the other ID is "
 							+ otherKey.getLength() + " bits long.");
 		}
 
-		// compare value byte by byte
-		byte[] otherBytes = new byte[this.id.length];
-		System.arraycopy(otherKey.id, 0, otherBytes, 0, this.id.length);
-
-		for (int i = 0; i < this.id.length; i++) {
-			if ((byte) (this.id[i] - 128) < (byte) (otherBytes[i] - 128)) {
-				return -1; // this ID is smaller
-			} else if ((byte) (this.id[i] - 128) > (byte) (otherBytes[i] - 128)) {
-				return 1; // this ID is greater
-			}
+		for (int i = 0; i < id.length(); ++i) {
+		  if (id.get(i) != otherKey.id.get(i))
+		    return id.get(i) ? 1 : -1;
 		}
+		
 		return 0;
-
 	}
 
 	/**
 	 * @see java.lang.Object#hashCode()
 	 */
 	public final int hashCode() {
-		int result = 19;
-		for (int i = 0; i < this.id.length; i++) {
-			result = 13 * result + this.id[i];
-		}
-		return result;
+		return 19 + id.hashCode() * 13;
 	}
 
 	/**
@@ -391,25 +288,20 @@ public final class ID implements Comparable<ID>, Serializable {
 
 		// interval does not cross zero -> compare with both bounds
 		if (fromID.compareTo(toID) < 0) {
-			return (this.compareTo(fromID) > 0 && this.compareTo(toID) < 0);
+			return (compareTo(fromID) > 0) &&
+			       (compareTo(toID  ) < 0);
 		}
-
-		// interval crosses zero -> split interval at zero
-		// calculate min and max IDs
-		byte[] minIDBytes = new byte[this.id.length];
-		ID minID = new ID(minIDBytes);
-		byte[] maxIDBytes = new byte[this.id.length];
-		for (int i = 0; i < maxIDBytes.length; i++) {
-			maxIDBytes[i] = -1;
-		}
-		ID maxID = new ID(maxIDBytes);
+		
 		// check both splitted intervals
-		// first interval: (fromID, maxID]
-		return ((!fromID.equals(maxID) && this.compareTo(fromID) > 0 && this
-				.compareTo(maxID) <= 0) ||
-		// second interval: [minID, toID)
-		(!minID.equals(toID) && this.compareTo(minID) >= 0 && this
-				.compareTo(toID) < 0));
+    // first interval: (fromID, maxID]
+		final boolean a = (!fromID.equals(idMax) ) &&
+		                  (compareTo(fromID) >  0) &&
+		                  (compareTo(idMax ) <= 0);
+	// second interval: [minID, toID)
+		final boolean b = (!idMin.equals(toID)   ) &&
+		                  (compareTo(idMin ) >= 0) &&
+		                  (compareTo(toID  ) <  0);
+		return a || b;
 	}
 
 }

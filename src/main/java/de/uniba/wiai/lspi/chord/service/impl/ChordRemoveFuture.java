@@ -30,6 +30,8 @@ package de.uniba.wiai.lspi.chord.service.impl;
 import java.io.Serializable;
 import java.util.concurrent.Executor;
 
+import com.chord4js.ProviderId;
+
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.ChordFuture;
 import de.uniba.wiai.lspi.chord.service.Key;
@@ -53,22 +55,16 @@ class ChordRemoveFuture extends ChordFutureImpl {
 	/**
 	 * The key used for the insertion. 
 	 */
-	private Key key;
-
-	/**
-	 * The entry to remove. 
-	 */
-	private Serializable entry;
+	private ProviderId id;
 
 	/**
 	 * @param c
 	 * @param k
 	 * @param entry
 	 */
-	private ChordRemoveFuture(Chord c, Key k, Serializable entry) {
+	private ChordRemoveFuture(Chord c, ProviderId x) {
 		this.chord = c;
-		this.key = k;
-		this.entry = entry;
+		this.id = x;
 	}
 
 	/**
@@ -89,22 +85,17 @@ class ChordRemoveFuture extends ChordFutureImpl {
 	 *            The entry to be removed.
 	 * @return Instance of this class.
 	 */
-	final static ChordRemoveFuture create(Executor exec, Chord c, Key k,
-			Serializable entry) {
+	final static ChordRemoveFuture create(Executor exec, Chord c, ProviderId id) {
 		if (c == null) {
 			throw new IllegalArgumentException(
 					"ChordRemoveFuture: chord instance must not be null!");
 		}
-		if (k == null) {
-			throw new IllegalArgumentException(
-					"ChordRemoveFuture: key must not be null!");
-		}
-		if (entry == null) {
+		if (id == null) {
 			throw new IllegalArgumentException(
 					"ChordRemoveFuture: entry must not be null!");
 		}
 		
-		ChordRemoveFuture f = new ChordRemoveFuture(c, k, entry);
+		ChordRemoveFuture f = new ChordRemoveFuture(c, id);
 		exec.execute(f.getTask());
 		return f;
 	}
@@ -113,7 +104,7 @@ class ChordRemoveFuture extends ChordFutureImpl {
 	 * @return The runnable that executes the operation associated with this. 
 	 */
 	private final Runnable getTask() {
-		return new RemoveTask(this.chord, this.key, this.entry);
+		return new RemoveTask(this.chord, id);
 	}
 
 	/**
@@ -133,27 +124,21 @@ class ChordRemoveFuture extends ChordFutureImpl {
 		/**
 		 * The key used for the insertion. 
 		 */
-		private Key key;
+		private ProviderId id;
 
-		/**
-		 * The entry to remove. 
-		 */
-		private Serializable entry;
-		
 		/**
 		 * @param chord
 		 * @param key
 		 * @param entry
 		 */
-		RemoveTask(Chord chord, Key key, Serializable entry){
+		RemoveTask(Chord chord, ProviderId x){
 			this.chord = chord; 
-			this.key = key; 
-			this.entry = entry; 
+			this.id = x;  
 		}
 		
 		public void run() {
 			try {
-				this.chord.remove(this.key, this.entry);
+				this.chord.remove(id);
 			} catch (Throwable t) {
 				setThrowable(t);
 			}

@@ -30,6 +30,9 @@ package de.uniba.wiai.lspi.chord.service;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 /**
  * <p>
  * This is the interface that must be implemented by classes 
@@ -90,7 +93,7 @@ public interface ChordCallback {
 	 * This is <code>null</code> if insertion of <code>key</code> and 
 	 * <code>entry</code> was succesful.  
 	 */
-	public void inserted(Key key, Serializable entry, Throwable t); 
+	public void inserted(Service svc, Throwable t); 
 	
 	/**
 	 * This is the callback method for removal of the <code>entry</code> 
@@ -103,6 +106,6 @@ public interface ChordCallback {
 	 * This is <code>null</code> if removal of 
 	 * <code>entry</code> was succesful.
 	 */
-	public void removed(Key key, Serializable entry, Throwable t); 
+	public void removed(ProviderId svcId, Throwable t); 
 	
 }

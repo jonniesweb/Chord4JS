@@ -1,14 +1,19 @@
 package com.chord4js;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A Service contains a ProviderId with Quality-of-Service information.
  */
-public class Service {
+public class Service implements Serializable {
 	
-	private final ProviderId providerId;
+	/**
+   * 
+   */
+  private static final long serialVersionUID = -5922896053115608353L;
+  private final ProviderId providerId;
 	private final List<String> qos;
 	
 	/**

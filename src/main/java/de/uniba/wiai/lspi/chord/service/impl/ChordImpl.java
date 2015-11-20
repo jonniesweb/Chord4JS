@@ -31,6 +31,7 @@ import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import com.chord4js.ProviderId;
+import com.chord4js.QoSConstraints;
+import com.chord4js.Service;
+import com.chord4js.ServiceId;
+import com.chord4js.Unit;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Entry;
@@ -684,17 +691,17 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 	}
 
-	public final void insert(Key key, Serializable s) {
+	public final void insert(final Service svc) {
 
 		// check parameters
-		if (key == null || s == null) {
+		if (svc == null) {
 			throw new NullPointerException(
 					"Neither parameter may have value null!");
 		}
 
 		// determine ID for key
-		ID id = this.hashFunction.getHashKey(key);
-		Entry entryToInsert = new Entry(id, s);
+		final ID    id            = new ID(svc.getProviderId());
+    final Entry entryToInsert = new Entry(id, svc);
 
 		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
@@ -730,38 +737,26 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		this.logger.debug("New entry was inserted!");
 	}
 
-	public final Set<Serializable> retrieve(Key key) {
-
-		// check parameters
-		if (key == null) {
-			NullPointerException e = new NullPointerException(
-					"Key must not have value null!");
-			this.logger.error("Null pointer", e);
-			throw e;
-		}
+	public final Set<Serializable> retrieve(final ServiceId       svcId
+	                                       ,final QoSConstraints  constraints
+	                                       ,final int             amount) {
+	  final Set<Serializable> values = new HashSet<>();
+	  if (amount <= 0) return values;
 
 		// determine ID for key
-		ID id = this.hashFunction.getHashKey(key);
-
+	  final ID.IdSpan span = ID.ServiceId(svcId);
+	  
 		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
-			this.logger.debug("Retrieving entries with id " + id);
+			this.logger.debug("Retrieving entries with id " + span);
 		}
+		
 		Set<Entry> result = null;
-
-		boolean retrieved = false;
-		while (!retrieved) {
-			// find successor of id
-			Node responsibleNode = null;
-
-			responsibleNode = findSuccessor(id);
-
-			// invoke retrieveEntry method
+		for (;;) {
 			try {
-				result = responsibleNode.retrieveEntries(id);
-				// cause while loop to end.
-
-				retrieved = true;
+			  final Node node = findSuccessor(span.bgn);
+			  result = node.retrieveEntries(span, constraints, amount);
+			  break;
 			} catch (CommunicationException e1) {
 				if (debug) {
 					this.logger
@@ -773,7 +768,6 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 				continue;
 			}
 		}
-		Set<Serializable> values = new HashSet<Serializable>();
 
 		if (result != null) {
 			for (Entry entry : result) {
@@ -787,25 +781,24 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 	}
 
-	public final void remove(Key key, Serializable s) {
+	public final void remove(final ProviderId svcId) {
 
 		// check parameters
-		if (key == null || s == null) {
+		if (svcId == null) {
 			throw new NullPointerException(
 					"Neither parameter may have value null!");
 		}
 
 		// determine ID for key
-		ID id = this.hashFunction.getHashKey(key);
-		Entry entryToRemove = new Entry(id, s);
+		final ID    id            = new ID(svcId);
+		final Entry entryToRemove = new Entry(id, Unit.U);
 
 		boolean removed = false;
 		while (!removed) {
 
 			boolean debug = this.logger.isEnabledFor(DEBUG);
 			if (debug) {
-				this.logger.debug("Removing entry with id " + id
-						+ " and value " + s);
+				this.logger.debug("Removing entry with id " + id);
 			}
 
 			// find successor of id
@@ -986,38 +979,38 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		});
 	}
 
-	public void insert(final Key key, final Serializable entry,
+	public void insert(final Service svc,
 			final ChordCallback callback) {
 		final Chord chord = this;
 		this.asyncExecutor.execute(new Runnable() {
 			public void run() {
 				Throwable t = null;
 				try {
-					chord.insert(key, entry);
+					chord.insert(svc);
 				} catch (ServiceException e) {
 					t = e;
 				} catch (Throwable th) {
 					t = th;
 				}
-				callback.inserted(key, entry, t);
+				callback.inserted(svc, t);
 			}
 		});
 	}
 
-	public void remove(final Key key, final Serializable entry,
+	public void remove(final ProviderId svcId,
 			final ChordCallback callback) {
 		final Chord chord = this;
 		this.asyncExecutor.execute(new Runnable() {
 			public void run() {
 				Throwable t = null;
 				try {
-					chord.remove(key, entry);
+					chord.remove(svcId);
 				} catch (ServiceException e) {
 					t = e;
 				} catch (Throwable th) {
 					t = th;
 				}
-				callback.removed(key, entry, t);
+				callback.removed(svcId, t);
 			}
 		});
 	}
@@ -1026,12 +1019,11 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		return ChordRetrievalFutureImpl.create(this.asyncExecutor, this, key);
 	}
 
-	public ChordFuture insertAsync(Key key, Serializable entry) {
-		return ChordInsertFuture.create(this.asyncExecutor, this, key, entry);
+	public ChordFuture insertAsync(final Service svc) {
+		return ChordInsertFuture.create(this.asyncExecutor, this, svc);
 	}
 
-	public ChordFuture removeAsync(Key key, Serializable entry) {
-		return ChordRemoveFuture.create(this.asyncExecutor, this, key, entry);
+	public ChordFuture removeAsync(final ProviderId svcId) {
+		return ChordRemoveFuture.create(this.asyncExecutor, this, svcId);
 	}
-
 }
