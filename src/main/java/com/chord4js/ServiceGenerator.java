@@ -45,10 +45,10 @@ public class ServiceGenerator {
 		// create a bunch of random services
 		List<Service> services = new ArrayList<Service>();
 		for (int i = 0; i < 100; i++) {
-			ServiceFactory service = createRandomServiceFromLeafs(leafNodes);
-			Service identifier = service.createRandom(random);
-			services.add(identifier);
-			System.out.println(identifier);
+			ServiceFactory serviceFactory = createRandomServiceFromLeafs(leafNodes);
+			Service service = serviceFactory.createRandom(random);
+			services.add(service);
+			System.out.println(service);
 		}
 	}
 	
@@ -61,7 +61,7 @@ public class ServiceGenerator {
 	 */
 	private ServiceFactory createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
 		LinkedList<String> layers = new LinkedList<String>();
-		ServiceFactory service = new ServiceFactory();
+		ArrayList<String> qos = new ArrayList<String>();
 		
 		// get a random leaf from the list
 		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));
@@ -72,20 +72,19 @@ public class ServiceGenerator {
 			// add the name of the service to the beginning of the list (since
 			// we're going from child to root)
 			layers.addFirst(currentNode.getName());
-			
-			// add QOS to ServiceIdentifier, if any
+			// add QOS to Service, if any
 			if (currentNode.getQos() != null) {
-				service.addQos(currentNode.getQos());
+				qos.addAll(currentNode.getQos());
 			}
 			
 			// update the current node to the node's parent
 			currentNode = currentNode.getParent();
 		}
 		
-		// add the functional layers to the ServiceIdentifier object
-		service.setLayers(layers);
+		// add the functional layers to the Service object
+		ServiceFactory serviceFactory = new ServiceFactory(layers, qos);
 		
-		return service;
+		return serviceFactory;
 	}
 	
 	/**

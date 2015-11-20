@@ -6,7 +6,6 @@ import java.util.Set;
 
 import de.uniba.wiai.lspi.chord.console.command.entry.Key;
 import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
@@ -84,7 +83,7 @@ public class Chord4STest {
 	 */
 	private void addNewNode() throws Exception {
 		
-		Chord4S chord = new Chord4S();
+		ChordImpl chord = new ChordImpl();
 		chord.join(getNextURL(), bootstrapURL);
 		
 	}
