@@ -8,6 +8,19 @@ public class ServiceFactory {
 	private List<String> layers;
 	private List<String> qos;
 	
+	/**
+	 * @param layers
+	 * @param qos
+	 */
+	public ServiceFactory(List<String> layers, List<String> qos) {
+		if (layers == null || qos == null) {
+			throw new NullPointerException();
+		}
+		
+		this.layers = layers;
+		this.qos = qos;
+	}
+	
 	@Override
 	public String toString() {
 		return "layers: " + layers + " qos: " + qos;

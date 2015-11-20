@@ -25,4 +25,9 @@ public class ProviderId extends ServiceId {
 		return providerPart;
 	}
 	
+	@Override
+	public String toString() {
+		return getHash() + " providerPart: " + providerPart;
+	}
+	
 }
