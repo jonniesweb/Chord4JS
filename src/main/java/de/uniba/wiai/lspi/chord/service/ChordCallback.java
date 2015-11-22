@@ -31,7 +31,9 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.chord4js.ProviderId;
+import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
+import com.chord4js.ServiceId;
 
 /**
  * <p>
@@ -79,7 +81,7 @@ public interface ChordCallback {
 	 * This is <code>null</code> if retrieval of <code>key</code> 
 	 * was succesful.
 	 */
-	public void retrieved(Key key, Set<Serializable> entries, Throwable t);
+	public void retrieved(ServiceId svcId, QoSConstraints c, Set<Service> entries, Throwable t);
 	
 	/**
 	 * This method is called, when a call to 

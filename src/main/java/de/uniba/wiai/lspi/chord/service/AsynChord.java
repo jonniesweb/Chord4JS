@@ -29,6 +29,11 @@ package de.uniba.wiai.lspi.chord.service;
 
 import java.io.Serializable;
 
+import com.chord4js.ProviderId;
+import com.chord4js.QoSConstraints;
+import com.chord4js.Service;
+import com.chord4js.ServiceId;
+
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 
@@ -239,7 +244,7 @@ public interface AsynChord {
 	 *            The {@link ChordCallback} to which to pass the retrieval
 	 *            result.
 	 */
-	public void retrieve(Key key, ChordCallback callback);
+	public void retrieve(C4SMsgRetrieve x, ChordCallback callback);
 
 	/**
 	 * Asynchronous method to insert <code>entry</code> under the provided
@@ -255,7 +260,7 @@ public interface AsynChord {
 	 *            The {@link ChordCallback} to which to pass the retrieval
 	 *            result.
 	 */
-	public void insert(Key key, Serializable entry, ChordCallback callback);
+	public void insert(Service svc, ChordCallback callback);
 
 	/**
 	 * Asynchronous method to remove <code>entry</code> under the provided
@@ -271,7 +276,7 @@ public interface AsynChord {
 	 *            The {@link ChordCallback} to which to pass the retrieval
 	 *            result.
 	 */
-	public void remove(Key key, Serializable entry, ChordCallback callback);
+	public void remove(ProviderId svcId, ChordCallback callback);
 
 	/**
 	 * Asynchronous method to retrieve the entries associated with
@@ -285,7 +290,7 @@ public interface AsynChord {
 	 * @return {@link ChordRetrievalFuture} that represents the result of the
 	 *         retrieve method.
 	 */
-	public ChordRetrievalFuture retrieveAsync(Key key);
+	public ChordRetrievalFuture retrieveAsync(C4SMsgRetrieve x);
 
 	/**
 	 * Asynchronous method to insert <code>entry</code> with <code>key</code>.
@@ -301,7 +306,7 @@ public interface AsynChord {
 	 * @return {@link ChordFuture}, which can be used later on to determine
 	 *         completion of the insertion.
 	 */
-	public ChordFuture insertAsync(Key key, Serializable entry);
+	public ChordFuture insertAsync(Service svc);
 
 	/**
 	 * Asynchronous method to remove <code>entry</code> with <code>key</code>.
@@ -316,5 +321,5 @@ public interface AsynChord {
 	 * @return {@link ChordFuture}, which can be used later on to determine
 	 *         completion of the removal.
 	 */
-	public ChordFuture removeAsync(Key key, Serializable entry);
+	public ChordFuture removeAsync(ProviderId svcId);
 }

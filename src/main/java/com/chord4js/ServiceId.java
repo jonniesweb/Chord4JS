@@ -11,7 +11,7 @@ import de.uniba.wiai.lspi.chord.service.Key;
  * ASSUME: All service names are an N part semantic name + a provider id (all
  * part are strings)
  */
-public class ServiceId implements Key {
+public class ServiceId {
 	
 	/**
 	 * Length of the hash used in the hex string format
@@ -71,13 +71,7 @@ public class ServiceId implements Key {
 	protected static String hash(final String data) {
 		return DigestUtils.sha1Hex(data);
 	}
-	
-	@Override
-	public byte[] getBytes() {
-		
-		return getHash().getBytes();
-	}
-	
+
 	/**
 	 * Get a string of all semantic and provider hashes appended together
 	 * 

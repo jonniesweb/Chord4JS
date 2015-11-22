@@ -34,8 +34,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import de.uniba.wiai.lspi.chord.com.Entry;
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+import com.chord4js.ServiceId;
+
 import de.uniba.wiai.lspi.chord.data.ID;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -71,14 +75,16 @@ final class Entries {
 	 * Local hash table for entries. Is synchronized, st. methods do not have to
 	 * be synchronized.
 	 */
-	private Map<ID, Set<Entry>> entries = null;
+	// \fixme replace with nested map of strings instead.
+	// Java doesn't have type-aliases nor dependent types to ensure this matches up with #of semantic parts
+	private Map<ProviderId, Service> entries = null;
 
 	/**
 	 * Creates an empty repository for entries.
 	 */
 	Entries(){ 
 		this.entries = Collections
-				.synchronizedMap(new TreeMap<ID, Set<Entry>>());
+				.synchronizedMap(new TreeMap<ProviderId, Service>());
 	}
 
 	/**
@@ -89,7 +95,7 @@ final class Entries {
 	 * @throws NullPointerException
 	 *             If set reference is <code>null</code>.
 	 */
-	final void addAll(Set<Entry> entriesToAdd) {
+	final void addAll(Set<Service> entriesToAdd) {
 
 		if (entriesToAdd == null) {
 			NullPointerException e = new NullPointerException(
@@ -99,7 +105,7 @@ final class Entries {
 			throw e;
 		}
 
-		for (Entry nextEntry : entriesToAdd) {
+		for (Service nextEntry : entriesToAdd) {
 			this.add(nextEntry);
 		}
 
@@ -117,27 +123,21 @@ final class Entries {
 	 * @throws NullPointerException
 	 *             If entry to add is <code>null</code>.
 	 */
-	final void add(Entry entryToAdd) {
+	final void add(Service svc) {
 		
-		if (entryToAdd == null) {
+		if (svc == null) {
 			NullPointerException e = new NullPointerException(
 					"Entry to add may not be null!");
 			Entries.logger.error("Null pointer", e);
 			throw e;
 		}
 
-		Set<Entry> values;
 		synchronized (this.entries) {
-			if (this.entries.containsKey(entryToAdd.getId())) {
-				values = this.entries.get(entryToAdd.getId());
-			} else {
-				values = new HashSet<Entry>();
-				this.entries.put(entryToAdd.getId(), values);
-			}
-			values.add(entryToAdd);
+			entries.put(svc.getProviderId(), svc);
 		}
+		
 		if (debugEnabled) {
-			Entries.logger.debug("Entry was added: " + entryToAdd);
+			Entries.logger.debug("Entry was added: " + svc);
 		}
 	}
 
@@ -149,9 +149,9 @@ final class Entries {
 	 * @throws NullPointerException
 	 *             If entry to remove is <code>null</code>.
 	 */
-	final void remove(Entry entryToRemove) {
+	final void remove(ProviderId svcId) {
 		
-		if (entryToRemove == null) {
+		if (svcId == null) {
 			NullPointerException e = new NullPointerException(
 					"Entry to remove may not be null!");
 			Entries.logger.error("Null pointer", e);
@@ -159,16 +159,10 @@ final class Entries {
 		}
 
 		synchronized (this.entries) {
-			if (this.entries.containsKey(entryToRemove.getId())) {
-				Set<Entry> values = this.entries.get(entryToRemove.getId());
-				values.remove(entryToRemove);
-				if (values.size() == 0) {
-					this.entries.remove(entryToRemove.getId());
-				}
-			}
+			this.entries.remove(svcId);
 		}
 		if (debugEnabled) {
-			Entries.logger.debug("Entry was removed: " + entryToRemove);
+			Entries.logger.debug("Entry was removed: " + svcId);
 		}
 	}
 
@@ -183,41 +177,26 @@ final class Entries {
 	 * @return Set of matching entries. Empty Set if no matching entries are
 	 *         available.
 	 */
-	final Set<Entry> getEntries(ID id) {
+	final Set<Service> getEntries(C4SMsgRetrieve msg) {
 
-		if (id == null) {
+		if (msg == null) {
 			NullPointerException e = new NullPointerException(
 					"ID to find entries for may not be null!");
 			Entries.logger.error("Null pointer", e);
 			throw e;
 		}
-		synchronized (this.entries) {
-			/*
-			 * This has to be synchronized as the test if the map contains a set
-			 * associated with id can succeed and then the thread may hand
-			 * control over to another thread that removes the Set belonging to
-			 * id. In that case this.entries.get(id) would return null which
-			 * would break the contract of this method.
-			 */
-			if (this.entries.containsKey(id)) {
-				Set<Entry> entriesForID = this.entries.get(id);
-				/*
-				 * Return a copy of the set to avoid modification of Set stored
-				 * in this.entries from outside this class. (Avoids also
-				 * modifications concurrent to iteration over the Set by a
-				 * client of this class.
-				 */
-				if (debugEnabled) {
-					Entries.logger.debug("Returning entries " + entriesForID);
-				}
-				return new HashSet<Entry>(entriesForID);
-			}
+		
+		Set<Service> svcs = new HashSet<>();
+		if (msg.amount > 0) {
+  		for (Service s : getEntriesInInterval(msg.span.bgn, msg.span.endIncl)) {
+  		  if (!msg.constraints.satisfies(s)) continue;
+  		  svcs.add(s);
+  		  
+  		  if (msg.amount >= svcs.size()) break;
+  		}
 		}
-		if (debugEnabled) {
-			Entries.logger.debug("No entries available for " + id
-					+ ". Returning empty set.");
-		}
-		return new HashSet<Entry>();
+		
+		return svcs;
 	}
 
 	/**
@@ -235,7 +214,7 @@ final class Entries {
 	 *             <code>null</code>.
 	 * @return Set of matching entries.
 	 */
-	final Set<Entry> getEntriesInInterval(ID fromID, ID toID) {
+	final Set<Service> getEntriesInInterval(ID fromID, ID toID) {
 
 		if (fromID == null || toID == null) {
 			NullPointerException e = new NullPointerException(
@@ -244,22 +223,19 @@ final class Entries {
 			throw e;
 		}
 
-		Set<Entry> result = new HashSet<Entry>();
-
+		Set<Service> result = new HashSet<>();
 		synchronized (this.entries) {
-			for (ID nextID : this.entries.keySet()) {
-				if (nextID.isInInterval(fromID, toID)) {
-					Set<Entry> entriesForID = this.entries.get(nextID);
-					for (Entry entryToAdd : entriesForID) {
-						result.add(entryToAdd);
-					}
-				}
+		  // (or so it claims)
+			for (ProviderId nextID : entries.keySet()) {
+			  final ID id = new ID(nextID);
+   			// add entries in [fromId, toId]
+			  // isInInterval apparently only says [from, to)
+			  // so explicitly check for equal on last
+				if (id.isInInterval(fromID, toID) || id.equals(toID))
+				  result.add(entries.get(nextID));
 			}
 		}
-
-		// add entries matching upper bound
-		result.addAll(this.getEntries(toID));
-
+		
 		return result;
 	}
 
@@ -271,7 +247,7 @@ final class Entries {
 	 * @throws NullPointerException
 	 *             If the given set of entries is <code>null</code>.
 	 */
-	final void removeAll(Set<Entry> toRemove) {
+	final void removeAll(Set<ProviderId> toRemove) {
 
 		if (toRemove == null) {
 			NullPointerException e = new NullPointerException(
@@ -280,7 +256,7 @@ final class Entries {
 			throw e;
 		}
 
-		for (Entry nextEntry : toRemove) {
+		for (ProviderId nextEntry : toRemove) {
 			this.remove(nextEntry);
 		}
 
@@ -295,7 +271,7 @@ final class Entries {
 	 * 
 	 * @return Unmodifiable map of all stored entries.
 	 */
-	final Map<ID, Set<Entry>> getEntries() {
+	final Map<ProviderId, Service> getEntries() {
 		return Collections.unmodifiableMap(this.entries);
 	}
 
@@ -315,7 +291,7 @@ final class Entries {
 	 */
 	public final String toString() {
 		StringBuilder result = new StringBuilder("Entries:\n");
-		for (Map.Entry<ID, Set<Entry>> entry : this.entries.entrySet()) {
+		for (Map.Entry<ProviderId, Service> entry : this.entries.entrySet()) {
 			result.append("  key = " + entry.getKey().toString()
 					+ ", value = " + entry.getValue() + "\n");
 		}

@@ -105,9 +105,12 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
     throw new Exception("Implement reduction from full hash to lower N bits for each part (highest entropy)");
   }
 	
-	public static class IdSpan {
+	public static class IdSpan implements Cloneable {
 	  public ID bgn, endIncl;
 	  protected IdSpan(BitSet a, BitSet b) { bgn = new ID(a); endIncl = new ID(b); }
+	  
+	  @Override
+	  public IdSpan clone() { return new IdSpan(bgn.id, endIncl.id); }
 	}
 	
 	public static IdSpan ServiceId(ServiceId svcId) {
@@ -293,6 +296,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 		}
 		
 		// check both splitted intervals
+		// \fixme THIS LOOKS FISHY. REVIEW 
     // first interval: (fromID, maxID]
 		final boolean a = (!fromID.equals(idMax) ) &&
 		                  (compareTo(fromID) >  0) &&
@@ -302,6 +306,11 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 		                  (compareTo(idMin ) >= 0) &&
 		                  (compareTo(toID  ) <  0);
 		return a || b;
+	}
+	
+	public final boolean isInIntervalInclusive(ID fromID, ID toID) {
+	  if (isInInterval(fromID, toID)) return true;
+	  return equals(fromID) || equals(toID);
 	}
 
 }

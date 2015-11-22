@@ -38,8 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.Proxy;
 import de.uniba.wiai.lspi.chord.data.ID;
@@ -495,7 +496,7 @@ final class References {
 							.get(sLSize - 1);
 					try {
 						lastSuccessor.removeReplicas(this.predecessor
-								.getNodeID(), new HashSet<Entry>());
+								.getNodeID(), new HashSet<>());
 					} catch (CommunicationException e) {
 						logger
 								.warn(
@@ -512,7 +513,7 @@ final class References {
 					this.logger.info("Predecessor reference set to "
 							+ potentialPredecessor + "; was null before.");
 				}
-				Set<Entry> entriesToRep = this.entries.getEntriesInInterval(
+				Set<Service> entriesToRep = this.entries.getEntriesInInterval(
 						this.predecessor.getNodeID(), this.localID);
 				List<Node> successors = this.successorList.getReferences();
 				for (Node successor : successors) {

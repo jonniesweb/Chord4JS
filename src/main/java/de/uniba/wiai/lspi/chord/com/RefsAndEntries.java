@@ -36,6 +36,8 @@ package de.uniba.wiai.lspi.chord.com;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Service;
+
 /**
  * @author karsten
  * @version 1.0.5
@@ -56,13 +58,13 @@ public final class RefsAndEntries implements java.io.Serializable {
 	/**
 	 * The entries a node is responsible for.
 	 */
-	private Set<Entry> entries; // set of Entry
+	private Set<Service> entries; // set of Entry
 
 	/**
 	 * @param refs1
 	 * @param entries1
 	 */
-	public RefsAndEntries(List<Node> refs1, Set<Entry> entries1) {
+	public RefsAndEntries(List<Node> refs1, Set<Service> entries1) {
 		this.refs = refs1;
 		this.entries = entries1;
 	}
@@ -70,7 +72,7 @@ public final class RefsAndEntries implements java.io.Serializable {
 	/**
 	 * @return Returns the entries.
 	 */
-	public Set<Entry> getEntries() {
+	public Set<Service> getEntries() {
 		return this.entries;
 	}
 

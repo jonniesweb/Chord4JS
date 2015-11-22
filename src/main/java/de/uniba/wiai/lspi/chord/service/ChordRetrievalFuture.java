@@ -30,6 +30,8 @@ package de.uniba.wiai.lspi.chord.service;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.chord4js.Service;
+
 /**
  * This {@link ChordFuture} represents the invocation result of
  * {@link AsynChord#retrieveAsync(Key)}.
@@ -57,6 +59,6 @@ public interface ChordRetrievalFuture extends ChordFuture {
 	 *             If the thread, which invokes this method, has been
 	 *             interrupted while waiting for the result.
 	 */
-	public Set<Serializable> getResult() throws ServiceException,
+	public Set<Service> getResult() throws ServiceException,
 			InterruptedException;
 }

@@ -31,6 +31,11 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.chord4js.QoSConstraints;
+import com.chord4js.Service;
+import com.chord4js.ServiceId;
+
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.ChordRetrievalFuture;
 import de.uniba.wiai.lspi.chord.service.Key;
@@ -49,7 +54,7 @@ class ChordRetrievalFutureImpl extends ChordFutureImpl implements
 	/**
 	 * The result of the retrieval request associated with this.
 	 */
-	private Set<Serializable> result;
+	private Set<Service> result;
 
 	/**
 	 * The chord instance used for the operation that is associated with this. 
@@ -59,31 +64,33 @@ class ChordRetrievalFutureImpl extends ChordFutureImpl implements
 	/**
 	 * The key to retrieve the associated entries for. 
 	 */
-	private Key key = null;
+	private C4SMsgRetrieve msg;
 
 	/**
 	 * 
 	 * @param c
 	 * @param k
+	 * @param amount 
+	 * @param qos 
 	 */
-	private ChordRetrievalFutureImpl(Chord c, Key k) {
+	private ChordRetrievalFutureImpl(Chord c, C4SMsgRetrieve x) {
 		super();
 		this.chord = c;
-		this.key = k;
+		msg = x;
 	}
 
 	/**
 	 * 
 	 * @param r
 	 */
-	final void setResult(Set<Serializable> r) {
+	final void setResult(Set<Service> r) {
 		this.result = r;
 	}
 
 	/**
 	 * @see ChordRetrievalFuture
 	 */
-	public final Set<Serializable> getResult() throws ServiceException,
+	public final Set<Service> getResult() throws ServiceException,
 			InterruptedException {
 		synchronized (this) {
 			while (!this.isDone()) {
@@ -102,7 +109,7 @@ class ChordRetrievalFutureImpl extends ChordFutureImpl implements
 	 * @return Runnable that performs the retrieve operation. 
 	 */
 	private Runnable getTask() {
-		return new RetrievalTask(this.chord, this.key);
+		return new RetrievalTask(this.chord, msg);
 	}
 
 	/**
@@ -117,19 +124,21 @@ class ChordRetrievalFutureImpl extends ChordFutureImpl implements
 	 *            The {@link Chord} instance to be used for retrieval.
 	 * @param k
 	 *            The {@link Key} for which the entries should be retrieved.
+	 * @param amount 
+	 * @param c2 
 	 * @return An instance of this.
 	 */
-	final static ChordRetrievalFutureImpl create(Executor exec, Chord c, Key k) {
+	final static ChordRetrievalFutureImpl create(Executor exec, Chord c, C4SMsgRetrieve x) {
 		if (c == null) {
 			throw new IllegalArgumentException(
 					"ChordRetrievalFuture: chord instance must not be null!");
 		}
-		if (k == null) {
+		if (x == null) {
 			throw new IllegalArgumentException(
 					"ChordRetrievalFuture: key must not be null!");
 		}
 
-		ChordRetrievalFutureImpl future = new ChordRetrievalFutureImpl(c, k);
+		ChordRetrievalFutureImpl future = new ChordRetrievalFutureImpl(c, x);
 		exec.execute(future.getTask());
 		return future;
 	}
@@ -148,23 +157,20 @@ class ChordRetrievalFutureImpl extends ChordFutureImpl implements
 		 */
 		private Chord chord = null;
 
-		/**
-		 * The key to retrieve the associated entries for. 
-		 */
-		private Key key = null;
+		private C4SMsgRetrieve msg;
 		
 		/**
 		 * @param chord
 		 * @param key
 		 */
-		private RetrievalTask(Chord chord, Key key) {
+		private RetrievalTask(Chord chord, C4SMsgRetrieve x) {
 			this.chord = chord; 
-			this.key = key; 
+			msg = x; 
 		}
 
 		public void run() {
 			try {
-				setResult(this.chord.retrieve(this.key));
+				setResult(chord.retrieve(msg));
 			} catch (Throwable t) {
 				setThrowable(t);
 			}

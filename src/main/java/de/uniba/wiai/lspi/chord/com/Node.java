@@ -30,10 +30,13 @@ package de.uniba.wiai.lspi.chord.com;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
 import com.chord4js.QoSConstraints;
+import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 
 /**
  * Provides methods which remote nodes can invoke.
@@ -161,19 +164,19 @@ public abstract class Node {
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract void insertEntry(Entry entryToInsert)
+	public abstract void insertEntry(Service svc)
 			throws CommunicationException;
 
 	/**
 	 * Inserts replicates of the given entries.
 	 * 
-	 * @param entries
+	 * @param entriesToRep
 	 *            The entries that are replicated.
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 * 
 	 */
-	public abstract void insertReplicas(Set<Entry> entries)
+	public abstract void insertReplicas(Set<Service> entriesToRep)
 			throws CommunicationException;
 
 	/**
@@ -184,7 +187,7 @@ public abstract class Node {
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract void removeEntry(Entry entryToRemove)
+	public abstract void removeEntry(ProviderId x)
 			throws CommunicationException;
 
 	/**
@@ -193,7 +196,7 @@ public abstract class Node {
 	 * @param sendingNode
 	 *            ID of sending node; if entriesToRemove is empty, all replicas
 	 *            with ID smaller than the sending node's ID are removed
-	 * @param replicasToRemove
+	 * @param entriesToRemove
 	 *            Replicas to remove; if empty, all replicas with ID smaller
 	 *            than the sending node's ID are removed
 	 * 
@@ -201,7 +204,7 @@ public abstract class Node {
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
 	public abstract void removeReplicas(ID sendingNode,
-			Set<Entry> replicasToRemove) throws CommunicationException;
+			Set<ProviderId> entriesToRemove) throws CommunicationException;
 
 	/**
 	 * Returns all entries stored under the given ID.
@@ -211,7 +214,7 @@ public abstract class Node {
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract Set<Entry> retrieveEntries(ID.IdSpan s, QoSConstraints c, int amount)
+	public abstract Set<Service> retrieveEntries(C4SMsgRetrieve x)
 			throws CommunicationException;
 
 	/**

@@ -38,15 +38,17 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.chord4js.ProviderId;
 import com.chord4js.QoSConstraints;
+import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -208,7 +210,7 @@ public final class NodeImpl extends Node {
 			// of
 			// the potential predecessor, including those equal to potential
 			// predecessor
-			Set<Entry> copiedEntries = this.entries.getEntriesInInterval(
+			Set<Service> copiedEntries = this.entries.getEntriesInInterval(
 					this.nodeID, potentialPredecessor.getNodeID());
 
 			return new RefsAndEntries(this.notify(potentialPredecessor),
@@ -231,16 +233,17 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void insertEntry(Entry toInsert) throws CommunicationException {
+	public final void insertEntry(Service toInsert) throws CommunicationException {
 		if (this.logger.isEnabledFor(DEBUG)) {
-			this.logger.debug("Inserting entry with id " + toInsert.getId()
+			this.logger.debug("Inserting entry with id " + toInsert.getProviderId()
 					+ " at node " + this.nodeID);
 		}
 
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
+		final ID pid = new ID(toInsert.getProviderId());
 		if ((this.references.getPredecessor() == null)
-				|| !toInsert.getId().isInInterval(
+				|| !pid.isInInterval(
 						this.references.getPredecessor().getNodeID(),
 						this.nodeID)) {
 			this.references.getPredecessor().insertEntry(toInsert); 
@@ -252,11 +255,11 @@ public final class NodeImpl extends Node {
 
 		// create set containing this entry for insertion of replicates at all
 		// nodes in successor list
-		Set<Entry> newEntries = new HashSet<Entry>();
+		Set<Service> newEntries = new HashSet<>();
 		newEntries.add(toInsert);
 
 		// invoke insertReplicates method on all nodes in successor list
-		final Set<Entry> mustBeFinal = new HashSet<Entry>(newEntries);
+		final Set<Service> mustBeFinal = new HashSet<>(newEntries);
 		for (final Node successor : this.references.getSuccessors()) {
 			this.asyncExecutor.execute(new Runnable() {
 				public void run() {
@@ -274,7 +277,7 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void insertReplicas(Set<Entry> replicatesToInsert) {
+	public final void insertReplicas(Set<Service> replicatesToInsert) {
 		this.entries.addAll(replicatesToInsert);
 	}
 
@@ -282,41 +285,42 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void removeEntry(Entry entryToRemove)
+	public final void removeEntry(ProviderId providerId)
 			throws CommunicationException {
 
 		if (this.logger.isEnabledFor(DEBUG)) {
-			this.logger.debug("Removing entry with id " + entryToRemove.getId()
+			this.logger.debug("Removing entry with id " + providerId
 					+ " at node " + this.nodeID);
 		}
 
+		final ID id = new ID(providerId);
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
 		if (this.references.getPredecessor() != null
-				&& !entryToRemove.getId().isInInterval(
+				&& !id.isInInterval(
 						this.references.getPredecessor().getNodeID(),
 						this.nodeID)) {
-			this.references.getPredecessor().removeEntry(entryToRemove);
+			this.references.getPredecessor().removeEntry(providerId);
 			return;
 		}
 
 		// remove entry from repository
-		this.entries.remove(entryToRemove);
+		this.entries.remove(providerId);
 
 		// create set containing this entry for removal of replicates at all
 		// nodes in successor list
-		final Set<Entry> entriesToRemove = new HashSet<Entry>();
-		entriesToRemove.add(entryToRemove);
+		final Set<ProviderId> entriesToRemove = new HashSet<>();
+		entriesToRemove.add(providerId);
 
 		// invoke removeReplicates method on all nodes in successor list
 		List<Node> successors = this.references.getSuccessors();
-		final ID id = this.nodeID;
+		final ID nid = this.nodeID;
 		for (final Node successor : successors) {
 			this.asyncExecutor.execute(new Runnable() {
 				public void run() {
 					try {
 						// remove only replica of removed entry
-						successor.removeReplicas(id, entriesToRemove);
+						successor.removeReplicas(nid, entriesToRemove);
 					} catch (CommunicationException e) {
 						// do nothing for the moment
 					}
@@ -329,8 +333,7 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final void removeReplicas(ID sendingNodeID,
-			Set<Entry> replicasToRemove) {
+	public final void removeReplicas(ID sendingNodeID, Set<ProviderId> replicasToRemove) {
 		if (replicasToRemove.size() == 0) {
 			// remove all replicas in interval
 			boolean debug = this.logger.isEnabledFor(DEBUG);
@@ -342,7 +345,7 @@ public final class NodeImpl extends Node {
 			 * Determine entries to remove. These entries are located between
 			 * the id of the local peer and the argument sendingNodeID
 			 */
-			Set<Entry> allReplicasToRemove = this.entries.getEntriesInInterval(
+			Set<Service> allReplicasToRemove = this.entries.getEntriesInInterval(
 					this.nodeID, sendingNodeID);
 			if (debug) {
 				this.logger.debug("Replicas to remove " + allReplicasToRemove);
@@ -353,7 +356,8 @@ public final class NodeImpl extends Node {
 			/*
 			 * Remove entries
 			 */
-			this.entries.removeAll(allReplicasToRemove);
+			for (Service s : allReplicasToRemove)
+			  this.entries.remove(s.getProviderId());
 
 			if (debug) {
 				this.logger
@@ -370,28 +374,42 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Set<Entry> retrieveEntries(ID.IdSpan s, QoSConstraints c, int amount)
+	public final Set<Service> retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
-	  if (amount <= 0) return new HashSet<>();
+	  if (msg.amount <= 0) return new HashSet<>();
 	  
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
 		if (this.references.getPredecessor() != null
-				&& !id.isInInterval(this.references.getPredecessor()
-						.getNodeID(), this.nodeID)) {
+				&& !msg.span.bgn.isInInterval(references.getPredecessor().getNodeID()
+				                             ,nodeID)) {
 			this.logger.fatal("The rare situation has occured at time "
-					+ System.currentTimeMillis() + ", id to look up=" + id
+					+ System.currentTimeMillis() + ", id to look up=" + msg.span.bgn
 					+ ", id of local node=" + this.nodeID
 					+ ", id of predecessor="
 					+ this.references.getPredecessor().getNodeID());
-			return this.references.getPredecessor().retrieveEntries(id);
+			return this.references.getPredecessor().retrieveEntries(msg);
 		}
 
 		// return entries from local repository
 		// for this purpose create a copy of the Set in order to allow the
 		// thread retrieving the entries to modify the Set without modifying the
 		// internal Set of entries. sven
-		return this.entries.getEntries(id);
+		Set<Service> results = entries.getEntries(msg);
+		final int moreResults = msg.amount - results.size();
+		if (moreResults > 0) {
+		  final Node next = references.getSuccessor();
+		  if (next != null) {
+		    final ID nextId = next.getNodeID();
+		    if (nextId.isInIntervalInclusive(msg.span.bgn, msg.span.endIncl)) {
+		      final C4SMsgRetrieve msg2 = msg.Subset(next.getNodeID(), moreResults);
+		      // Add results from futher down the segment
+		      results.addAll(next.retrieveEntries(msg2));
+		    }
+		  }
+		}
+		
+		return results;
 	}
 
 	/**

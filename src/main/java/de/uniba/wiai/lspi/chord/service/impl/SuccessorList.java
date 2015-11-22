@@ -33,8 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.util.logging.Logger;
@@ -215,7 +216,7 @@ final class SuccessorList {
 
 		// replicate entries from determined ID up to local ID
 		ID toID = this.localID;
-		Set<Entry> entriesToReplicate = this.entries.getEntriesInInterval(
+		Set<Service> entriesToReplicate = this.entries.getEntriesInInterval(
 				fromID, toID);
 		try {
 			nodeToAdd.insertReplicas(entriesToReplicate);
@@ -240,7 +241,7 @@ final class SuccessorList {
 			// fromID, toID);
 			try {
 				// remove all replicas!
-				nodeToDelete.removeReplicas(this.localID, new HashSet<Entry>());
+				nodeToDelete.removeReplicas(this.localID, new HashSet<>());
 				this.logger.debug("Removed replicas from node " + nodeToDelete);
 			} catch (CommunicationException e) {
 				this.logger.warn("Replicas of entries could not be removed "

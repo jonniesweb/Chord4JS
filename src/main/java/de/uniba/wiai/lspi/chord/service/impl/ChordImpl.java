@@ -49,13 +49,13 @@ import com.chord4js.ServiceId;
 import com.chord4js.Unit;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.Proxy;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.AsynChord;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.ChordCallback;
 import de.uniba.wiai.lspi.chord.service.ChordFuture;
@@ -700,8 +700,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		}
 
 		// determine ID for key
-		final ID    id            = new ID(svc.getProviderId());
-    final Entry entryToInsert = new Entry(id, svc);
+		final ID id = new ID(svc.getProviderId());
 
 		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
@@ -721,7 +720,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 			// invoke insertEntry method
 			try {
-				responsibleNode.insertEntry(entryToInsert);
+				responsibleNode.insertEntry(svc);
 				inserted = true;
 			} catch (CommunicationException e1) {
 				if (debug) {
@@ -737,26 +736,20 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		this.logger.debug("New entry was inserted!");
 	}
 
-	public final Set<Serializable> retrieve(final ServiceId       svcId
-	                                       ,final QoSConstraints  constraints
-	                                       ,final int             amount) {
-	  final Set<Serializable> values = new HashSet<>();
-	  if (amount <= 0) return values;
+	public final Set<Service> retrieve(C4SMsgRetrieve msg) {
+	  final Set<Service> values = new HashSet<>();
+	  if (msg.amount <= 0) return values;
 
-		// determine ID for key
-	  final ID.IdSpan span = ID.ServiceId(svcId);
-	  
+		// determine ID span for the service id (wildcarded)
 		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
-			this.logger.debug("Retrieving entries with id " + span);
+			this.logger.debug("Retrieving entries with id " + msg.span);
 		}
-		
-		Set<Entry> result = null;
+
 		for (;;) {
 			try {
-			  final Node node = findSuccessor(span.bgn);
-			  result = node.retrieveEntries(span, constraints, amount);
-			  break;
+			  return findSuccessor(msg.span.bgn)
+			            .retrieveEntries(msg);
 			} catch (CommunicationException e1) {
 				if (debug) {
 					this.logger
@@ -769,29 +762,18 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			}
 		}
 
-		if (result != null) {
-			for (Entry entry : result) {
-				values.add(entry.getValue());
-			}
-		}
-
-		this.logger.debug("Entries were retrieved!");
-
-		return values;
-
 	}
 
-	public final void remove(final ProviderId svcId) {
+	public final void remove(final ProviderId providerId) {
 
 		// check parameters
-		if (svcId == null) {
+		if (providerId == null) {
 			throw new NullPointerException(
 					"Neither parameter may have value null!");
 		}
 
 		// determine ID for key
-		final ID    id            = new ID(svcId);
-		final Entry entryToRemove = new Entry(id, Unit.U);
+		final ID id = new ID(providerId);
 
 		boolean removed = false;
 		while (!removed) {
@@ -811,7 +793,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			}
 			// invoke removeEntry method
 			try {
-				responsibleNode.removeEntry(entryToRemove);
+				responsibleNode.removeEntry(providerId);
 				removed = true;
 			} catch (CommunicationException e1) {
 				if (debug) {
@@ -961,20 +943,20 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		}
 	}
 
-	public void retrieve(final Key key, final ChordCallback callback) {
+	public void retrieve(C4SMsgRetrieve x, final ChordCallback callback) {
 		final Chord chord = this;
 		this.asyncExecutor.execute(new Runnable() {
 			public void run() {
 				Throwable t = null;
-				Set<Serializable> result = null;
+				Set<Service> result = null;
 				try {
-					result = chord.retrieve(key);
+					result = chord.retrieve(x);
 				} catch (ServiceException e) {
 					t = e;
 				} catch (Throwable th) {
 					t = th;
 				}
-				callback.retrieved(key, result, t);
+				callback.retrieved(x.svcId, x.constraints, result, t);
 			}
 		});
 	}
@@ -1015,8 +997,8 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		});
 	}
 
-	public ChordRetrievalFuture retrieveAsync(Key key) {
-		return ChordRetrievalFutureImpl.create(this.asyncExecutor, this, key);
+	public ChordRetrievalFuture retrieveAsync(C4SMsgRetrieve x) {
+		return ChordRetrievalFutureImpl.create(this.asyncExecutor, this, x);
 	}
 
 	public ChordFuture insertAsync(final Service svc) {

@@ -31,7 +31,9 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.chord4js.ProviderId;
+import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
+import com.chord4js.ServiceId;
 
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
@@ -237,7 +239,8 @@ public interface Chord {
 	 *             Is thrown if retrieval failed, e.g. due to a communication
 	 *             failure. However, the network is left in a stable state.
 	 */
-	public abstract Set<Serializable> retrieve(Key key) throws ServiceException;
+	public abstract Set<Service> retrieve(C4SMsgRetrieve x)
+	    throws ServiceException;
 
 	/**
 	 * Removes the given object stored under given key from the network.
