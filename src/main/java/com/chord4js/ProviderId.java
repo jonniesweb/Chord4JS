@@ -8,7 +8,7 @@ public class ProviderId extends ServiceId {
 	 */
 	private final String providerPart;
 	
-	ProviderId(String[] semanticName, String providerId) {
+	public ProviderId(String[] semanticName, String providerId) {
 		super(semanticName);
 		this.providerPart = providerId;
 		

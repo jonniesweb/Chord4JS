@@ -10,10 +10,10 @@ import java.util.List;
 public class Service implements Serializable {
 	
 	/**
-   * 
-   */
-  private static final long serialVersionUID = -5922896053115608353L;
-  private final ProviderId providerId;
+	 * 
+	 */
+	private static final long serialVersionUID = -5922896053115608353L;
+	private final ProviderId providerId;
 	private final List<String> qos;
 	
 	/**

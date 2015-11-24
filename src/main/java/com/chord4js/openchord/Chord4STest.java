@@ -1,11 +1,15 @@
 package com.chord4js.openchord;
 
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.Set;
 
-import de.uniba.wiai.lspi.chord.console.command.entry.Key;
+import org.apache.log4j.Logger;
+
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
@@ -15,6 +19,8 @@ import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
  * network.
  */
 public class Chord4STest {
+	
+	private static final Logger log = Logger.getLogger(Chord4STest.class);
 	
 	private static final String PROTOCOL = URL.KNOWN_PROTOCOLS.get(URL.LOCAL_PROTOCOL);
 	private URL bootstrapURL;
@@ -36,34 +42,41 @@ public class Chord4STest {
 			// add a second node (required)
 			addNewNode();
 			
-			// insert some test values
-			System.out.println("insert key/values");
-			chord.insert(new Key("test"), "hello world");
-			chord.insert(new Key("test"), "hello world!");
+			// create service
+			String[] serviceID = new String[] { "a", "b", "c", "d" };
+			ProviderId providerId = new ProviderId(serviceID, "e");
+			Service service = new Service(providerId, "s");
 			
-			System.out.println(chord.printEntries());
+			// insert some test values
+			log.info("insert key/values");
+			chord.insert(service);
+			chord.insert(service);
+			
+			log.info(chord.printEntries());
 			
 			// retrieve values for a key
-			System.out.println("retrieve value by key");
-			Set<Serializable> value = chord.retrieve(new Key("test"));
-			System.out.println("value: " + value);
+			log.info("retrieve value by key");
+			C4SMsgRetrieve c4sMsgRetrieve = new C4SMsgRetrieve(providerId, null, 1);
+			
+			Set<Service> value = chord.retrieve(c4sMsgRetrieve);
+			log.info("value: " + value);
 			
 			// remove a value
-			System.out.println("removing value by key");
-			chord.remove(new Key("test"), "hello world!");
+			log.info("removing value by key");
+			chord.remove(providerId);
 			
-			System.out.println(chord.printEntries());
+			log.info(chord.printEntries());
 			
 			// leave the network
 			chord.leave();
 			
 		} catch (ServiceException e) {
-			e.printStackTrace();
+			log.error("an error occurred. quitting", e);
 			
 		} finally {
-			System.exit(0);
 		}
 		
+		System.exit(0);
 	}
 	
 	/**
