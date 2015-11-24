@@ -27,4 +27,22 @@ public interface Chord4SDriver {
 	 * @return
 	 */
 	Set<Service> lookup(ServiceId serviceId);
+	
+	/**
+	 * Join the network
+	 * 
+	 * @param bootstrapURL
+	 */
+	void join(String bootstrapURL);
+	
+	/**
+	 * Tell the node to leave the network gracefully.
+	 */
+	void leave();
+	
+	/**
+	 * Crash this node. Don't leave the network gracefully. Use
+	 * ThreadEndpoint.crash()
+	 */
+	void crash();
 }
