@@ -1,5 +1,7 @@
 package com.chord4js;
 
+import java.io.Serializable;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,9 +13,14 @@ import de.uniba.wiai.lspi.chord.service.Key;
  * ASSUME: All service names are an N part semantic name + a provider id (all
  * part are strings)
  */
-public class ServiceId {
+public class ServiceId implements Serializable {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = 4579761673840594766L;
+
+  /**
 	 * Length of the hash used in the hex string format
 	 */
 	static final int HASH_LENGTH = 40;

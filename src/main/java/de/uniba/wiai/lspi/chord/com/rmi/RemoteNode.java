@@ -31,9 +31,12 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.data.ID;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 
 /**
  * 
@@ -65,7 +68,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public void insertEntry(Entry entryToInsert) throws CommunicationException,
+	public void insertEntry(Service entryToInsert) throws CommunicationException,
 			RemoteException;
 
 	/**
@@ -74,7 +77,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public void insertReplicas(Set<Entry> entries)
+	public void insertReplicas(Set<Service> entries)
 			throws CommunicationException, RemoteException;
 
 	/**
@@ -119,7 +122,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public void removeEntry(Entry entryToRemove) throws CommunicationException,
+	public void removeEntry(ProviderId entryToRemove) throws CommunicationException,
 			RemoteException;
 
 	/**
@@ -129,7 +132,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public void removeReplicas(ID sendingNode, Set<Entry> replicasToRemove)
+	public void removeReplicas(ID sendingNode, Set<ProviderId> replicasToRemove)
 			throws CommunicationException, RemoteException;
 
 	/**
@@ -139,7 +142,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public Set<Entry> retrieveEntries(ID id) throws CommunicationException,
+	public Set<Service> retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException,
 			RemoteException;
 	
 }

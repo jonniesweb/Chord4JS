@@ -33,14 +33,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.Proxy;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 
 public final class RMIProxy extends Proxy {
 
@@ -149,7 +152,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public void insertEntry(Entry entryToInsert) throws CommunicationException {
+	public void insertEntry(Service entryToInsert) throws CommunicationException {
 		this.testConnection();
 		try {
 			this.remoteNode.insertEntry(entryToInsert);
@@ -160,7 +163,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public void insertReplicas(Set<Entry> entries)
+	public void insertReplicas(Set<Service> entries)
 			throws CommunicationException {
 		this.testConnection();
 		try {
@@ -265,7 +268,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public void removeEntry(Entry entryToRemove) throws CommunicationException {
+	public void removeEntry(ProviderId entryToRemove) throws CommunicationException {
 		this.testConnection();
 		try {
 			this.remoteNode.removeEntry(entryToRemove); 
@@ -276,7 +279,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public void removeReplicas(ID sendingNode, Set<Entry> replicasToRemove)
+	public void removeReplicas(ID sendingNode, Set<ProviderId> replicasToRemove)
 			throws CommunicationException {
 		this.testConnection();
 		try {
@@ -288,7 +291,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public Set<Entry> retrieveEntries(ID id) throws CommunicationException {
+	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
 		this.testConnection();
 		try {
 			return this.remoteNode.retrieveEntries(id); 

@@ -31,7 +31,7 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.Set;
 
-import de.uniba.wiai.lspi.chord.com.Entry;
+import com.chord4js.Service;
 
 /**
  * This class represents entries and {@link RemoteNodeInfo references} that 
@@ -51,7 +51,7 @@ final class RemoteRefsAndEntries implements Serializable {
 	 * Set of {@link Entry}.
 	 * 
 	 */
-	protected Set<Entry> entries;
+	protected Set<Service> entries;
 
 	/**
 	 * List of {@link RemoteNodeInfo}.
@@ -63,7 +63,7 @@ final class RemoteRefsAndEntries implements Serializable {
 	 * @param entries1
 	 * @param nodeInfos1
 	 */
-	protected RemoteRefsAndEntries(Set<Entry> entries1,
+	protected RemoteRefsAndEntries(Set<Service> entries1,
 			List<RemoteNodeInfo> nodeInfos1) {
 		this.entries = entries1;
 		this.nodeInfos = nodeInfos1;
@@ -72,7 +72,7 @@ final class RemoteRefsAndEntries implements Serializable {
 	/**
 	 * @return Returns the entries.
 	 */
-	protected Set<Entry> getEntries() {
+	protected Set<Service> getEntries() {
 		return this.entries;
 	}
 
@@ -80,7 +80,7 @@ final class RemoteRefsAndEntries implements Serializable {
 	 * @param entries1
 	 *            The entries to set.
 	 */
-	protected void setEntries(Set<Entry> entries1) {
+	protected void setEntries(Set<Service> entries1) {
 		this.entries = entries1;
 	}
 

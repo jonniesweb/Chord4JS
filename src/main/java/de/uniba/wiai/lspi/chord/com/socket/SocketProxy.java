@@ -36,20 +36,24 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.security.Provider;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.Proxy;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -668,7 +672,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 	 * @param entry
 	 * @throws CommunicationException
 	 */
-	public void insertEntry(Entry entry) throws CommunicationException {
+	public void insertEntry(Service entry) throws CommunicationException {
 		this.makeSocketAvailable();
 
 		logger.debug("Trying to insert entry " + entry + ".");
@@ -700,7 +704,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 	 * @param replicas
 	 * @throws CommunicationException
 	 */
-	public void insertReplicas(Set<Entry> replicas)
+	public void insertReplicas(Set<Service> replicas)
 			throws CommunicationException {
 		this.makeSocketAvailable();
 
@@ -769,7 +773,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 	 * @param entry
 	 * @throws CommunicationException
 	 */
-	public void removeEntry(Entry entry) throws CommunicationException {
+	public void removeEntry(ProviderId entry) throws CommunicationException {
 		this.makeSocketAvailable();
 
 		logger.debug("Trying to remove entry " + entry + ".");
@@ -803,7 +807,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 	 * @param replicas
 	 * @throws CommunicationException
 	 */
-	public void removeReplicas(ID sendingNodeID, Set<Entry> replicas)
+	public void removeReplicas(ID sendingNodeID, Set<ProviderId> replicas)
 			throws CommunicationException {
 		this.makeSocketAvailable();
 
@@ -832,14 +836,14 @@ public final class SocketProxy extends Proxy implements Runnable {
 		}
 	}
 
-	public Set<Entry> retrieveEntries(ID id) throws CommunicationException {
+	public Set<Service> retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
 		this.makeSocketAvailable();
 
-		logger.debug("Trying to retrieve entries for ID " + id);
+		logger.debug("Trying to retrieve entries for ID " + msg);
 
 		/* prepare request for method findSuccessor */
 		Request request = this.createRequest(MethodConstants.RETRIEVE_ENTRIES,
-				new Serializable[] { id });
+				new Serializable[] { msg });
 		/* send request */
 		try {
 			logger.debug("Trying to send request " + request);
@@ -857,7 +861,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 					response.getThrowable());
 		} else {
 			try {
-				Set<Entry> result = (Set<Entry>) response.getResult();
+				Set<Service> result = (Set<Service>) response.getResult();
 				return result;
 			} catch (ClassCastException cce) {
 				throw new CommunicationException(

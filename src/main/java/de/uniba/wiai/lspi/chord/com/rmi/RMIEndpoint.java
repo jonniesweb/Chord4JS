@@ -38,13 +38,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 
 public final class RMIEndpoint extends Endpoint implements RemoteNode {
 
@@ -128,12 +131,12 @@ public final class RMIEndpoint extends Endpoint implements RemoteNode {
 		return this.node.getNodeID();
 	}
 
-	public void insertEntry(Entry entryToInsert) throws RemoteException,
+	public void insertEntry(Service entryToInsert) throws RemoteException,
 			CommunicationException {
 		this.node.insertEntry(entryToInsert);
 	}
 
-	public void insertReplicas(Set<Entry> entries) throws RemoteException,
+	public void insertReplicas(Set<Service> entries) throws RemoteException,
 			CommunicationException {
 		this.node.insertReplicas(entries);
 	}
@@ -171,18 +174,18 @@ public final class RMIEndpoint extends Endpoint implements RemoteNode {
 	public void ping() throws RemoteException {
 	}
 
-	public void removeEntry(Entry entryToRemove) throws RemoteException,
+	public void removeEntry(ProviderId entryToRemove) throws RemoteException,
 			CommunicationException {
 		this.node.removeEntry(entryToRemove);
 	}
 
-	public void removeReplicas(ID sendingNode, Set<Entry> replicasToRemove)
+	public void removeReplicas(ID sendingNode, Set<ProviderId> replicasToRemove)
 			throws RemoteException, CommunicationException {
 		this.node.removeReplicas(sendingNode, replicasToRemove);
 
 	}
 
-	public Set<Entry> retrieveEntries(ID id) throws RemoteException,
+	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws RemoteException,
 			CommunicationException {
 		return this.node.retrieveEntries(id);
 	}

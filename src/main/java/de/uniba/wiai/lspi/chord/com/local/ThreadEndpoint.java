@@ -34,13 +34,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
@@ -163,7 +166,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @param entry
 	 * @throws CommunicationException
 	 */
-	public void insertEntry(Entry entry) throws CommunicationException {
+	public void insertEntry(Service entry) throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.ACCEPT_ENTRIES);
 		/* delegate invocation to node. */
@@ -176,7 +179,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @param entry
 	 * @throws CommunicationException
 	 */
-	public void removeEntry(Entry entry) throws CommunicationException {
+	public void removeEntry(ProviderId entry) throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.ACCEPT_ENTRIES);
 		/* delegate invocation to node. */
@@ -229,11 +232,11 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @return The retrieved entries.
 	 * @throws CommunicationException
 	 */
-	public Set<Entry> retrieveEntries(ID id) throws CommunicationException {
+	public Set<Service> retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.ACCEPT_ENTRIES);
 		this.notifyInvocationListeners(InvocationListener.RETRIEVE_ENTRIES);
-		Set<Entry> s = this.node.retrieveEntries(id);
+		Set<Service> s = this.node.retrieveEntries(msg);
 		this
 				.notifyInvocationListenersFinished(InvocationListener.RETRIEVE_ENTRIES);
 		return s;
@@ -256,7 +259,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @param entriesToRemove
 	 * @throws CommunicationException
 	 */
-	public void removeReplicas(ID sendingNodeID, Set<Entry> entriesToRemove)
+	public void removeReplicas(ID sendingNodeID, Set<ProviderId> entriesToRemove)
 			throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.LISTENING);
@@ -270,7 +273,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @param entries
 	 * @throws CommunicationException
 	 */
-	public void insertReplicas(Set<Entry> entries)
+	public void insertReplicas(Set<Service> entries)
 			throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.LISTENING);

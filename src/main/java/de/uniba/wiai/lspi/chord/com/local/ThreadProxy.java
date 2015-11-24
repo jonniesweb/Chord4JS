@@ -28,17 +28,22 @@
 package de.uniba.wiai.lspi.chord.com.local;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.Proxy;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.util.logging.Logger;
+
+import java.security.Provider;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
 
 /**
  * This class represents a {@link Proxy} for the protocol that allows 
@@ -204,7 +209,7 @@ public final class ThreadProxy extends Proxy {
 		}
 	}
 
-	public void insertEntry(Entry entry) throws CommunicationException {
+	public void insertEntry(Service entry) throws CommunicationException {
 		this.checkValidity();
 		logger.debug("Trying to execute insert().");
 		// ThreadEndpoint endpoint = this.registry.lookup(this.nodeName);
@@ -216,7 +221,7 @@ public final class ThreadProxy extends Proxy {
 		logger.debug("insert() executed");
 	}
 
-	public void removeEntry(Entry entry) throws CommunicationException {
+	public void removeEntry(ProviderId entry) throws CommunicationException {
 		this.checkValidity();
 		this.endpoint.removeEntry(entry);
 	}
@@ -268,7 +273,7 @@ public final class ThreadProxy extends Proxy {
 		this.endpoint.ping();
 	}
 
-	public Set<Entry> retrieveEntries(ID id) throws CommunicationException {
+	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
 		this.checkValidity();
 		logger.debug("Trying to execute retrieve().");
 		logger.debug("Found endpoint " + this.endpoint);
@@ -300,7 +305,7 @@ public final class ThreadProxy extends Proxy {
 		this.endpoint.leavesNetwork(predecessorProxy);
 	}
 
-	public void removeReplicas(ID sendingNodeID, Set<Entry> entriesToRemove)
+	public void removeReplicas(ID sendingNodeID, Set<ProviderId> entriesToRemove)
 			throws CommunicationException {
 		this.checkValidity();
 		logger.debug("Trying to execute removeReplicas(" + entriesToRemove
@@ -313,7 +318,7 @@ public final class ThreadProxy extends Proxy {
 		this.endpoint.removeReplicas(sendingNodeID, entriesToRemove);
 	}
 
-	public void insertReplicas(Set<Entry> entries)
+	public void insertReplicas(Set<Service> entries)
 			throws CommunicationException {
 		this.checkValidity();
 		logger.debug("Trying to execute insertReplicas(" + entries + ").");

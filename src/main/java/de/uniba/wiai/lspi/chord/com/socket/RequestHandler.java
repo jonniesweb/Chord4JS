@@ -46,13 +46,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import com.chord4js.ProviderId;
+import com.chord4js.Service;
+
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Endpoint;
 import de.uniba.wiai.lspi.chord.com.EndpointStateListener;
-import de.uniba.wiai.lspi.chord.com.Entry;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.util.logging.Logger;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.*;
 
@@ -313,11 +316,11 @@ final class RequestHandler extends Thread implements EndpointStateListener {
 			break;
 		}
 		case MethodConstants.INSERT_ENTRY: {
-			this.node.insertEntry((Entry) parameters[0]);
+			this.node.insertEntry((Service) parameters[0]);
 			break;
 		}
 		case MethodConstants.INSERT_REPLICAS: {
-			this.node.insertReplicas((Set<Entry>) parameters[0]);
+			this.node.insertReplicas((Set<Service>) parameters[0]);
 			break;
 		}
 		case MethodConstants.LEAVES_NETWORK: {
@@ -361,17 +364,17 @@ final class RequestHandler extends Thread implements EndpointStateListener {
 			break;
 		}
 		case MethodConstants.REMOVE_ENTRY: {
-			this.node.removeEntry((Entry) parameters[0]);
+			this.node.removeEntry((ProviderId) parameters[0]);
 			break;
 		}
 		case MethodConstants.REMOVE_REPLICAS: {
 			this.node.removeReplicas((ID) parameters[0],
-					(Set<Entry>) parameters[1]);
+					(Set<ProviderId>) parameters[1]);
 			break;
 		}
 		case MethodConstants.RETRIEVE_ENTRIES: {
 			result = (Serializable) this.node
-					.retrieveEntries((ID) parameters[0]);
+					.retrieveEntries((C4SMsgRetrieve) parameters[0]);
 			break;
 		}
 		default: {
