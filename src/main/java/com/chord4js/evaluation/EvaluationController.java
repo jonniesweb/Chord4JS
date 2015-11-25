@@ -31,7 +31,10 @@ public interface EvaluationController {
 	 * 
 	 * @param chord4sDrivers
 	 * @param percentage
+	 *            a number between 0 to 100 where 0 is no nodes crash, 100 all
+	 *            nodes crash
+	 * @return the nodes that are still alive
 	 */
-	void crashPercentageOfNodes(Set<Chord4SDriver> chord4sDrivers, int percentage);
+	Set<Chord4SDriver> crashPercentageOfNodes(Set<Chord4SDriver> chord4sDrivers, int percentage);
 	
 }
