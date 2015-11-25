@@ -1,5 +1,7 @@
 package com.chord4js.evaluation;
 
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 
 import com.chord4js.Service;
@@ -24,7 +26,6 @@ public class DataAvailabilityEvaluation {
 	
 	private static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
-
 	private static final int[] testCrashPercentages = new int[] { 5, 10, 15, 20, 25, 30, 35, 40,
 			45, 50, 55, 60 };
 	
@@ -38,7 +39,7 @@ public class DataAvailabilityEvaluation {
 	 * Number of services to generate for inserting into the network
 	 */
 	private static final int numberOfServices = 10000;
-
+	
 	/**
 	 * ServiceIds that can be queried for in the network.
 	 */
@@ -49,10 +50,12 @@ public class DataAvailabilityEvaluation {
 	 */
 	private Set<Service> services;
 	
+	private Random random = new Random();
+	
 	public DataAvailabilityEvaluation() throws Exception {
 		
-		// put an unspecified number of services into the network
-		ServiceGenerator serviceGenerator = new ServiceGenerator();
+		// generate services
+		ServiceGenerator serviceGenerator = new ServiceGenerator(random);
 		serviceIds = serviceGenerator.getPossibleServices();
 		services = serviceGenerator.getServices(numberOfServices);
 		
@@ -69,9 +72,19 @@ public class DataAvailabilityEvaluation {
 			int numberOfNodes = EvaluationController.NODES_2_7;
 			Set<Chord4SDriver> nodes = controller.createChord4SNetwork(numberOfNodes);
 			
+			// insert all services into the network from one node
+			// TODO: might be spread more evenly if inserted across nodes
+			// randomly
+			ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
 			
+			// for each service, call put on a random node
+			for (Service service : services) {
+				// get a random node from the nodeList
+				Chord4SDriver driver = nodesList.get(random.nextInt(nodesList.size()));
+				driver.put(service);
+			}
 			
-			// crash the crashPercentage of nodes
+			// crash a percentage of the nodes according to crashPercentage
 			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(nodes,
 					crashPercentage);
 			

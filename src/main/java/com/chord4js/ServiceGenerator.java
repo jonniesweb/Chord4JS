@@ -21,14 +21,19 @@ import com.esotericsoftware.yamlbeans.YamlReader;
  */
 public class ServiceGenerator {
 	
-	private Random random = new Random();
+	private Random random;
 	ArrayList<LeafNode> leafNodes = new ArrayList<LeafNode>();
 	
 	public static void main(String[] args) throws Exception {
-		new ServiceGenerator();
+		new ServiceGenerator(null);
 	}
 	
 	public ServiceGenerator() throws Exception {
+		this(new Random());
+	}
+
+	public ServiceGenerator(Random random) throws Exception {
+		this.random = random;
 		
 		// read yaml file from classpath
 		URL resource = getClass().getClassLoader().getResource("services.yaml");
