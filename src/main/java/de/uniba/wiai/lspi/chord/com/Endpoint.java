@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import de.uniba.wiai.lspi.chord.com.local.ThreadEndpoint;
 import de.uniba.wiai.lspi.chord.com.rmi.RMIEndpoint;
 import de.uniba.wiai.lspi.chord.com.socket.SocketEndpoint;
@@ -337,7 +339,7 @@ public abstract class Endpoint {
 			}
 			Endpoint endpoint = null;
 
-			// TODO irgendwann über properties lösen
+			// TODO irgendwann ï¿½ber properties lï¿½sen
 			if (url == null) {
 				throw new IllegalArgumentException("Url must not be null! ");
 			}
@@ -392,6 +394,10 @@ public abstract class Endpoint {
 		buffer.append(" with URL ");
 		buffer.append(this.url);
 		return buffer.toString();
+	}
+
+	public void crash() {
+		throw new NotImplementedException("please override in subclass");
 	}
 
 }

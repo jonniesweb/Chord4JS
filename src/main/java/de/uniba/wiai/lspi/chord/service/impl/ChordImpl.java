@@ -1008,4 +1008,12 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	public ChordFuture removeAsync(final ProviderId svcId) {
 		return ChordRemoveFuture.create(this.asyncExecutor, this, svcId);
 	}
+
+	/**
+	 * Crash this node by not responding to any requests.
+	 */
+	public void crash() {
+		localNode.crash();
+		
+	}
 }

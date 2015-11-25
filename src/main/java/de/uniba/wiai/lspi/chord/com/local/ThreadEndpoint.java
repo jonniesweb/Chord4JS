@@ -389,6 +389,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 * 
 	 * This method may cause problems at runtime.
 	 */
+	@Override
 	public void crash() {
 		this.logger.debug("crash() invoked!");
 		this.registry.unbind(this);

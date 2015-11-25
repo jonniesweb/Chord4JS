@@ -441,4 +441,12 @@ public final class NodeImpl extends Node {
 		return this.asyncExecutor;
 	}
 
+	/**
+	 * Disconnect this node from the network without notifying any of the other
+	 * nodes.
+	 */
+	public void crash() {
+		myEndpoint.crash();
+	}
+
 }
