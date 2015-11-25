@@ -3,7 +3,10 @@ package com.chord4js.evaluation;
 import java.util.Set;
 
 import com.chord4js.Service;
+import com.chord4js.ServiceGenerator;
 import com.chord4js.ServiceId;
+
+import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
  * Process:
@@ -19,9 +22,39 @@ import com.chord4js.ServiceId;
  */
 public class DataAvailabilityEvaluation {
 	
-	private int[] testCrashPercentages = new int[] { 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60 };
+	private static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
-	public DataAvailabilityEvaluation() {
+
+	private static final int[] testCrashPercentages = new int[] { 5, 10, 15, 20, 25, 30, 35, 40,
+			45, 50, 55, 60 };
+	
+	/**
+	 * Expect between 1 and this (inclusive) to be the number of services to
+	 * find when querying the network.
+	 */
+	private static final int expectedServicesInterval = 5;
+	
+	/**
+	 * Number of services to generate for inserting into the network
+	 */
+	private static final int numberOfServices = 10000;
+
+	/**
+	 * ServiceIds that can be queried for in the network.
+	 */
+	private Set<ServiceId> serviceIds;
+	
+	/**
+	 * Unique services that can be inserted into the network
+	 */
+	private Set<Service> services;
+	
+	public DataAvailabilityEvaluation() throws Exception {
+		
+		// put an unspecified number of services into the network
+		ServiceGenerator serviceGenerator = new ServiceGenerator();
+		serviceIds = serviceGenerator.getPossibleServices();
+		services = serviceGenerator.getServices(numberOfServices);
 		
 	}
 	
@@ -31,12 +64,12 @@ public class DataAvailabilityEvaluation {
 		for (int crashPercentage : testCrashPercentages) {
 			
 			EvaluationController controller = createTestEvaluationController();
-			// Chord4SDriver driver = createTestDriver();
 			
 			// TODO: extract testing with multiple network sizes
 			int numberOfNodes = EvaluationController.NODES_2_7;
-			Set<Chord4SDriver> nodes = controller
-					.createChord4SNetwork(numberOfNodes);
+			Set<Chord4SDriver> nodes = controller.createChord4SNetwork(numberOfNodes);
+			
+			
 			
 			// crash the crashPercentage of nodes
 			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(nodes,
@@ -47,13 +80,32 @@ public class DataAvailabilityEvaluation {
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
 			
 			// display the results of the test
-			System.out.println("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercentage + " results: " + results);
+			System.out.println("number of nodes: " + numberOfNodes + " crash percentage: "
+					+ crashPercentage + " results: " + results);
 			
 		}
 	}
 	
+	/**
+	 * Iterate over all alive nodes to randomly query an unspecified number of
+	 * times. Create an {@link AggregateQueryResults} and return it with the
+	 * aggregate successes/failures of these queries.
+	 * 
+	 * Note: Each query expects a random number of entries back, or else the
+	 * query fails.
+	 * 
+	 * @param aliveNodes
+	 * @return
+	 */
 	private AggregateQueryResults runRandomQueries(Set<Chord4SDriver> aliveNodes) {
-		// TODO Auto-generated method stub
+		// iterate over all the node's drivers
+		for (Chord4SDriver driver : aliveNodes) {
+			
+			// get a random ServiceId in use
+			ServiceId serviceId = null; // TODO
+			driver.lookup(serviceId);
+			
+		}
 		return null;
 		
 	}
@@ -113,7 +165,11 @@ public class DataAvailabilityEvaluation {
 	}
 	
 	public static void main(String[] args) {
-		new DataAvailabilityEvaluation().start();
+		try {
+			new DataAvailabilityEvaluation().start();
+		} catch (Exception e) {
+			log.error("error occurred during execution", e);
+		}
 	}
 	
 	/**

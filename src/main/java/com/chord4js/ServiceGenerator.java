@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.esotericsoftware.yamlbeans.YamlException;
@@ -271,6 +272,27 @@ public class ServiceGenerator {
 		public List<Node> getChildren() {
 			return null;
 		}
+	}
+	
+	/**
+	 * From the input file, return all of the ServiceIds that exist.
+	 * 
+	 * @return
+	 */
+	public Set<ServiceId> getPossibleServices() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
+	 * Generate numberOfServices number of random Services.
+	 * 
+	 * @param numberOfServices
+	 * @return
+	 */
+	public Set<Service> getServices(int numberOfServices) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
