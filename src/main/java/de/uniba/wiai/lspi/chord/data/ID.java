@@ -29,9 +29,13 @@ package de.uniba.wiai.lspi.chord.data;
 
 import java.io.Serializable;
 import java.util.BitSet;
+import java.util.Optional;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import com.chord4js.ProviderId;
 import com.chord4js.ServiceId;
+import com.chord4js.Unit;
 
 /**
  * Identifier for nodes and user-defined objects. New instances of this class
@@ -91,44 +95,151 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	 */
 	public final BitSet id;
 
-	/**
-	 * Creates a new ID consisting of the given byte[] array. The ID is assumed
-	 * to have (ID.length * 8) bits. It must have leading zeros if its value has
-	 * fewer digits than its maximum length.
-	 * 
-	 * @param id1
-	 *            Byte array containing the ID.
-	 */
-
-	public ID(ProviderId x) {
-    id = new BitSet(kTotalBitLen);
-    throw new Exception("Implement reduction from full hash to lower N bits for each part (highest entropy)");
+	private static BitSet hashString(final String s) {
+    return BitSet.valueOf(DigestUtils.sha1(s));
   }
 	
-	public static class IdSpan implements Cloneable {
-	  public ID bgn, endIncl;
-	  protected IdSpan(BitSet a, BitSet b) { bgn = new ID(a); endIncl = new ID(b); }
+	// up-sizing results in 0 being padded at the end
+	// \todo ensure we reduce using the highest entropy bits
+	private static BitSet bitsetResize(final BitSet a, final int numBits) {
+	  assert(numBits > 0);
+	  final BitSet b = new BitSet(numBits);
+    for (int i = 0; i < Math.min(a.size(), numBits); ++i)
+      b.set(i, a.get(i));
+    
+    return b;
+	}
+	
+	private static void partHashSet(final BitSet dst, final int dstOffset, final BitSet src) {
+	  assert(dstOffset + src.length() <= dst.length());
+	  for (int i = dstOffset; i < src.length(); ++i)
+	    dst.set(dstOffset + i, src.get(i));
+	}
+	
+	// This is fucking absurd Java, get your crap together.
+	@FunctionalInterface
+  interface Fn0<         _R> { public _R apply(); }
+  @FunctionalInterface
+  interface Fn1<A,       _R> { public _R apply(A a); }
+	@FunctionalInterface
+  interface Fn2<A, B,    _R> { public _R apply(A a, B b); }
+	@FunctionalInterface
+	interface Fn3<A, B, C, _R> { public _R apply(A a, B b, C c); }
+
+	private static BitSet hashServiceId(ServiceId svcId) {
+	  final BitSet bs = new BitSet(kTotalBitLen);
+	  final Fn3<Integer, Integer, String, Unit> hashInto =
+	      (Integer offset, Integer bitLen, String s) -> {
+	    if (s != null)
+  	    partHashSet(bs, offset, bitsetResize(hashString(s), bitLen));
+
+	    return Unit.U;
+	  };
 	  
-	  @Override
-	  public IdSpan clone() { return new IdSpan(bgn.id, endIncl.id); }
+	  // hash semantic 
+	  for (int i = 0; i < ServiceId.kPartsSemantic; ++i)
+	    hashInto.apply(i * kSemanticPartBitLen, kSemanticPartBitLen
+	                  ,svcId.parts[i]);
+
+	  // hash provider
+	  hashInto.apply(kSemanticTotalBitLen, kProviderBitLen
+                  ,svcId.parts[ServiceId.kPartsSemantic]);
+	  
+    return bs;
+	}
+	
+	private static BitSet bitsetArithPwrOf2(final BitSet _bs, final int pwrOf2, final boolean addition) {
+    // The bitset is defined as big-endian unsigned, i.e. (idx 0 is highest bit)
+    final BitSet bs = (BitSet)_bs.clone();
+    assert(pwrOf2 < bs.length());
+    for (int i = bs.length() - 1 - pwrOf2; i >= 0; --i) {
+      bs.flip(i);
+      // add/sub for unsigned binary is the same, except we bail if (set == addition) after flip
+      if (bs.get(i) == addition) break;
+    }
+    
+    return bs;
+  }
+	protected static BitSet bitsetSubPwrOf2(final BitSet _bs, final int pwrOf2)
+	{ return bitsetArithPwrOf2(_bs, pwrOf2, false); }
+	
+	protected static BitSet bitsetAddPwrOf2(final BitSet _bs, final int pwrOf2)
+  { return bitsetArithPwrOf2(_bs, pwrOf2, true); }
+		
+	public ID(ProviderId x) {
+    id = hashServiceId(x);
+  }
+	
+	
+
+	public static class IdSpan {
+	  public static final IdSpan kEmpty = new IdSpan(Optional.empty());
+    public static final IdSpan kAll   = Inclusive(idMin, idMax);
+    
+    public static IdSpan Inclusive(final ID bgn, final ID end)
+    { return new IdSpan(Optional.of(new SpanInclusive(bgn, end))); }
+
+	  public boolean empty() { return !span.isPresent(); }
+
+    public boolean contains(final ID x) {
+      return span.map((SpanInclusive s) -> {
+              final Fn2<ID, ID, Boolean> ltEq   = (ID a, ID b) -> a.compareTo(b) <= 0;
+              final Fn2<ID, ID, Boolean> inSpan = (ID a, ID b) -> ltEq.apply(a, x) && ltEq.apply(x, b);
+              if (ltEq.apply(s.bgn, s.end)) // non-wrapping
+                return inSpan.apply(s.bgn, s.end);
+              
+              // wraps around, check both [bgn, max] and [min, end]
+              return inSpan.apply(s.bgn, idMax) ||
+                     inSpan.apply(idMin, s.end);
+          }).orElse(false);
+    }
+    
+    public boolean containsExcl(ID x) {
+      return span.map((SpanInclusive s) -> {
+          return (!(s.bgn.equals(x) || s.end.equals(x))) &&
+                 contains(x);
+        }).orElse(false);
+    }
+    
+    public ID bgn() { return span.map((SpanInclusive s) -> s.bgn).orElse(null); } 
+    public ID end() { return span.map((SpanInclusive s) -> s.end).orElse(null); }
+
+    public IdSpan subsetMin(final ID newMin) {
+      return span.map((SpanInclusive s) -> {
+          return contains(newMin) ? Inclusive(newMin, s.end) : kEmpty;
+        }).orElse(kEmpty);
+    }
+    
+    private static class SpanInclusive {
+      public final ID bgn, end;
+      SpanInclusive(ID _bgn, ID _end) { bgn =  _bgn; end =  _end; }
+    }
+    
+    private final Optional<SpanInclusive> span;
+    private IdSpan(Optional<SpanInclusive> s) { span = s; }
 	}
 	
 	public static IdSpan ServiceId(ServiceId svcId) {
-	  throw new Exception("Implement wildcard span calc)");
-	  int numParts;
-	  for (numParts = 0; numParts < svcId.getHashedParts().length; ++numParts)
-	    if (svcId.getHashedParts()[numParts] == null) break;
+	  final ID bgn = new ID(hashServiceId(svcId));
 	  
+	  final BitSet bsEndIncl = (BitSet)bgn.id.clone();
+	  final Fn2<Integer, Integer, Unit> endFillBits = (Integer offset, Integer len) -> {
+	    assert(offset + len <= bgn.id.length());
+	    bsEndIncl.set(offset, offset + len);
+	    return Unit.U;
+	  };
 	  
-    BitSet a = new BitSet(kTotalBitLen);
-    BitSet b = new BitSet(kTotalBitLen);
-    return new IdSpan(a , b);
+	  for (int i = svcId.partsGivenCount(); i < ServiceId.kPartsSemantic; ++i)
+	    endFillBits.apply(i * kSemanticPartBitLen, kSemanticPartBitLen);
+
+	  if (svcId.getProviderPart() == null)
+	    endFillBits.apply(kSemanticTotalBitLen, kProviderBitLen);
+	  
+	  return IdSpan.Inclusive(bgn, new ID(bsEndIncl));
 	}
 	
 	public static ID NodeId(final byte[] blob) {
-	  final BitSet id = new BitSet(kTotalBitLen);
-	  throw new Exception("Implement similar reduction here");
-	  return new ID(id);
+	  return new ID(bitsetResize(BitSet.valueOf(blob), kTotalBitLen));
   }
 
 	private ID(BitSet x) { id = x; }
@@ -203,20 +314,8 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
       throw new IllegalArgumentException(
           "The power of two is out of range! It must be in the interval [0, length-1]");
     }
-	  
-	  ID copy = clone();
-	  
-    // perform hand-rolled binary addition. recall that the bitset is defined as big-endian.
-	  // i.e. (idx 0 is highest bit)
-	  for (int i = powerOfTwo; i < id.length(); ++i) {
-	    final int idx = id.length() - i - 1;
-	    copy.id.flip(idx);
-	    
-	    // 'twas zero previous. We're done.
-	    if (copy.id.get(idx)) break;
-	  }
-	  
-	  return copy;
+
+	  return new ID(bitsetAddPwrOf2(id, powerOfTwo));
 	}
 
 	/**
@@ -270,47 +369,9 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 		return 19 + id.hashCode() * 13;
 	}
 
-	/**
-	 * Checks if this ID is in the interval determined by the two given IDs.
-	 * Neither of the boundary IDs is included in the interval. If both IDs
-	 * match, the interval is assumed to span the whole ID ring.
-	 * 
-	 * @param fromID
-	 *            Lower bound of interval.
-	 * @param toID
-	 *            Upper bound of interval.
-	 * @return If this key is included in the given interval.
-	 */
-	public final boolean isInInterval(ID fromID, ID toID) {
-
-		// both interval bounds are equal -> calculate out of equals
-		if (fromID.equals(toID)) {
-			// every ID is contained in the interval except of the two bounds
-			return (!this.equals(fromID));
-		}
-
-		// interval does not cross zero -> compare with both bounds
-		if (fromID.compareTo(toID) < 0) {
-			return (compareTo(fromID) > 0) &&
-			       (compareTo(toID  ) < 0);
-		}
-		
-		// check both splitted intervals
-		// \fixme THIS LOOKS FISHY. REVIEW 
-    // first interval: (fromID, maxID]
-		final boolean a = (!fromID.equals(idMax) ) &&
-		                  (compareTo(fromID) >  0) &&
-		                  (compareTo(idMax ) <= 0);
-	// second interval: [minID, toID)
-		final boolean b = (!idMin.equals(toID)   ) &&
-		                  (compareTo(idMin ) >= 0) &&
-		                  (compareTo(toID  ) <  0);
-		return a || b;
-	}
-	
-	public final boolean isInIntervalInclusive(ID fromID, ID toID) {
-	  if (isInInterval(fromID, toID)) return true;
-	  return equals(fromID) || equals(toID);
-	}
+	// this in (a, b)
+	// NOTE: *not* [a, b], but (a, b)
+  public boolean isInInterval(ID a, ID b)
+  { return IdSpan.Inclusive(a, b).containsExcl(this); }
 
 }

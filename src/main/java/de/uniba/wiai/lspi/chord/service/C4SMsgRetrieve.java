@@ -30,8 +30,6 @@ public class C4SMsgRetrieve implements Serializable {
   }
   
   public C4SMsgRetrieve Subset(ID newMin, int amt) {
-    ID.IdSpan span2     = span.clone();
-              span2.bgn = newMin;
-    return new C4SMsgRetrieve(svcId, constraints, amt, span2);
+    return new C4SMsgRetrieve(svcId, constraints, amt, span.subsetMin(newMin));
   }
 }

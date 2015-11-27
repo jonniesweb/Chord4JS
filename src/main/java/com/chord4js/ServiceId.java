@@ -2,11 +2,6 @@ package com.chord4js;
 
 import java.io.Serializable;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import de.uniba.wiai.lspi.chord.service.Key;
-
 /**
  * Implementation simplification:
  * 
@@ -20,37 +15,22 @@ public class ServiceId implements Serializable {
    */
   private static final long serialVersionUID = 4579761673840594766L;
 
-  /**
-	 * Length of the hash used in the hex string format
-	 */
-	static final int HASH_LENGTH = 40;
-	
-	/**
-	 * The hash to put in place of a layer with no value
-	 */
-	static final String EMPTY_PART_HASH = StringUtils.repeat('0', HASH_LENGTH);
-	
 	/**
 	 * Number of semantic parts for a service
 	 */
 	public static final int kPartsSemantic = 4;
-	
-	/**
-	 * Number of provider parts for a service
-	 */
-	public static final int kPartsProvider = 1;
-	
+
 	/**
 	 * Total number of parts for a service
 	 */
-	public static final int kPartsAll = kPartsSemantic + kPartsProvider;
+	public static final int kPartsAll = kPartsSemantic + 1; // + 1 for provider part
 	
 	/**
-	 * Underlying data structure of this class. Stores hashed parts of the
-	 * service
+	 * Underlying data structure of this class. Stores parts of the
+	 * service identifier (semantic + provider)
 	 */
-	private final String[] hashedParts = new String[kPartsAll];
-	
+	public final String[] parts = new String[kPartsAll];
+
 	ServiceId(final String[] semanticName) {
 		// verify input
 		if (semanticName.length > kPartsSemantic)
@@ -58,49 +38,26 @@ public class ServiceId implements Serializable {
 		if (semanticName.length == 0)
 			throw new IllegalArgumentException("Semantic name has too few parts");
 		
-		// hash each part, placing it in the hashedParts array
 		for (int i = 0; i < semanticName.length; ++i) {
-			String part = semanticName[i];
-			if (part != null) {
-				getHashedParts()[i] = hash(part);
-			} else {
-				getHashedParts()[i] = null;
-			}
+		  assert(semanticName[i] == null);
+		  parts[i] = semanticName[i];
 		}
 	}
 	
 	/**
-	 * Hash the given data as a sha1 hex string
-	 * 
-	 * @param data
-	 * @return
-	 */
-	protected static String hash(final String data) {
-		return DigestUtils.sha1Hex(data);
-	}
-
-	/**
-	 * Get a string of all semantic and provider hashes appended together
-	 * 
-	 * @return all the hashes appended from semantic to provider
-	 */
-	String getHash() {
-		StringBuilder builder = new StringBuilder();
-		
-		// iterate over each value in hashedPart
-		for (String part : hashedParts) {
-			
-			if (part != null) {
-				builder.append(part);
-			} else {
-				builder.append(EMPTY_PART_HASH);
-			}
-		}
-		
-		return builder.toString();
-	}
+   * A string of the provider part
+   * 
+   * @return
+   */
+  public String getProviderPart() {
+    return parts[kPartsSemantic];
+  }
 	
-	public String[] getHashedParts() {
-		return hashedParts;
+	public int partsGivenCount() {
+	  assert(parts.length == kPartsAll);
+	  for (int i = 0; i < parts.length; ++i)
+	    if (parts[i] == null) return i;
+	  
+	  return parts.length;
 	}
 }

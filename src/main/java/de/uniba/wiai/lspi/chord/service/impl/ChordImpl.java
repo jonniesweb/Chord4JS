@@ -738,7 +738,8 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 	public final Set<Service> retrieve(C4SMsgRetrieve msg) {
 	  final Set<Service> values = new HashSet<>();
-	  if (msg.amount <= 0) return values;
+	  if (msg.amount <= 0  ) return values;
+	  if (msg.span.empty() ) return values;
 
 		// determine ID span for the service id (wildcarded)
 		boolean debug = this.logger.isEnabledFor(DEBUG);
@@ -748,7 +749,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 		for (;;) {
 			try {
-			  return findSuccessor(msg.span.bgn)
+			  return findSuccessor(msg.span.bgn())
 			            .retrieveEntries(msg);
 			} catch (CommunicationException e1) {
 				if (debug) {

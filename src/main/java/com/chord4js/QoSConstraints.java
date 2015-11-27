@@ -11,8 +11,7 @@ public class QoSConstraints implements Serializable {
 
   public boolean satisfies(Service s) {
     // TODO Auto-generated method stub
-    throw new Exception("IMPLEMENT");
-    return false;
+    return true;
   }
 
 }

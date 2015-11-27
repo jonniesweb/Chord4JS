@@ -188,7 +188,7 @@ final class Entries {
 		
 		Set<Service> svcs = new HashSet<>();
 		if (msg.amount > 0) {
-  		for (Service s : getEntriesInInterval(msg.span.bgn, msg.span.endIncl)) {
+  		for (Service s : getEntriesInInterval(msg.span.bgn(), msg.span.end())) {
   		  if (!msg.constraints.satisfies(s)) continue;
   		  svcs.add(s);
   		  

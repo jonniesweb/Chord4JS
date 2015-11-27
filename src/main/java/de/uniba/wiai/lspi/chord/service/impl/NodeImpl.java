@@ -39,7 +39,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.chord4js.ProviderId;
-import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
@@ -376,15 +375,16 @@ public final class NodeImpl extends Node {
 	@Override
 	public final Set<Service> retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
-	  if (msg.amount <= 0) return new HashSet<>();
+	  if (msg.amount <= 0 ) return new HashSet<>();
+	  if (msg.span.empty()) return new HashSet<>();
 	  
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
 		if (this.references.getPredecessor() != null
-				&& !msg.span.bgn.isInInterval(references.getPredecessor().getNodeID()
-				                             ,nodeID)) {
+				&& !msg.span.bgn().isInInterval(references.getPredecessor().getNodeID()
+				                               ,nodeID)) {
 			this.logger.fatal("The rare situation has occured at time "
-					+ System.currentTimeMillis() + ", id to look up=" + msg.span.bgn
+					+ System.currentTimeMillis() + ", id to look up=" + msg.span.bgn()
 					+ ", id of local node=" + this.nodeID
 					+ ", id of predecessor="
 					+ this.references.getPredecessor().getNodeID());
@@ -401,7 +401,7 @@ public final class NodeImpl extends Node {
 		  final Node next = references.getSuccessor();
 		  if (next != null) {
 		    final ID nextId = next.getNodeID();
-		    if (nextId.isInIntervalInclusive(msg.span.bgn, msg.span.endIncl)) {
+		    if (msg.span.contains(nextId)) {
 		      final C4SMsgRetrieve msg2 = msg.Subset(next.getNodeID(), moreResults);
 		      // Add results from futher down the segment
 		      results.addAll(next.retrieveEntries(msg2));
