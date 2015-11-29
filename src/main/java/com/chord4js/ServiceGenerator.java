@@ -23,6 +23,7 @@ public class ServiceGenerator {
 	
 	private Random random;
 	ArrayList<LeafNode> leafNodes = new ArrayList<LeafNode>();
+	private ServiceFactory serviceFactory;
 	
 	public static void main(String[] args) throws Exception {
 		new ServiceGenerator(null);
@@ -48,14 +49,8 @@ public class ServiceGenerator {
 		// call recursive method
 		processList(root, list);
 		
-		// create a bunch of random services
-		List<Service> services = new ArrayList<Service>();
-		for (int i = 0; i < 100; i++) {
-			ServiceFactory serviceFactory = createRandomServiceFromLeafs(leafNodes);
-			Service service = serviceFactory.createRandom(random);
-			services.add(service);
-			System.out.println(service);
-		}
+		// create the ServiceFactory
+		serviceFactory = createRandomServiceFromLeafs(leafNodes);
 	}
 	
 	/**

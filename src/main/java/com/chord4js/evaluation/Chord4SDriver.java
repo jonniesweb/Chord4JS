@@ -5,6 +5,9 @@ import java.util.Set;
 import com.chord4js.Service;
 import com.chord4js.ServiceId;
 
+import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.ServiceException;
+
 /**
  * An interface for specifying the behaviour of what a Chord4S node offers. Eg.
  * put, lookup.
@@ -21,7 +24,8 @@ public interface Chord4SDriver {
 	void put(Service service);
 	
 	/**
-	 * Retrieve the data on the Chord4S network with the given identifier.
+	 * Retrieve one Service if possible on the Chord4S network with the given
+	 * identifier.
 	 * 
 	 * @param serviceId
 	 * @return
@@ -29,11 +33,22 @@ public interface Chord4SDriver {
 	Set<Service> lookup(ServiceId serviceId);
 	
 	/**
-	 * Join the network
+	 * Retrieve <code>amount</code> number of Services if possible on the
+	 * Chord4S network with the given identifier.
+	 * 
+	 * @param serviceId
+	 * @param amount
+	 * @return
+	 */
+	Set<Service> lookup(ServiceId serviceId, int amount);
+	
+	/**
+	 * Join the network by connecting to an existing chord node at boostrapURL
 	 * 
 	 * @param bootstrapURL
+	 * @throws ServiceException 
 	 */
-	void join(String bootstrapURL);
+	void join(URL bootstrapURL) throws ServiceException;
 	
 	/**
 	 * Tell the node to leave the network gracefully.
@@ -41,8 +56,8 @@ public interface Chord4SDriver {
 	void leave();
 	
 	/**
-	 * Crash this node. Don't leave the network gracefully. Use
-	 * ThreadEndpoint.crash()
+	 * Crash this node. Don't leave the network gracefully.
 	 */
 	void crash();
+	
 }

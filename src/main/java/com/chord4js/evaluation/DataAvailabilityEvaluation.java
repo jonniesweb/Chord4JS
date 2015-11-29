@@ -8,6 +8,8 @@ import com.chord4js.Service;
 import com.chord4js.ServiceGenerator;
 import com.chord4js.ServiceId;
 
+import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
+import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -54,6 +56,8 @@ public class DataAvailabilityEvaluation {
 	
 	public DataAvailabilityEvaluation() throws Exception {
 		
+		configure();
+		
 		// generate services
 		ServiceGenerator serviceGenerator = new ServiceGenerator(random);
 		serviceIds = serviceGenerator.getPossibleServices();
@@ -61,16 +65,27 @@ public class DataAvailabilityEvaluation {
 		
 	}
 	
+	private void configure() {
+		System.setProperty("chord.properties.file", "config/chord4S.properties");
+		PropertiesLoader.loadPropertyFile();
+	}
+
 	public void start() {
 		
 		// iterate over all crash percentages
 		for (int crashPercentage : testCrashPercentages) {
 			
-			EvaluationController controller = createTestEvaluationController();
+			EvaluationController controller = new EvaluationControllerImpl();
 			
 			// TODO: extract testing with multiple network sizes
 			int numberOfNodes = EvaluationController.NODES_2_7;
-			Set<Chord4SDriver> nodes = controller.createChord4SNetwork(numberOfNodes);
+			Set<Chord4SDriver> nodes;
+			try {
+				nodes = controller.createChord4SNetwork(numberOfNodes);
+			} catch (ServiceException e) {
+				log.fatal("unable to create the network", e);
+				return;
+			}
 			
 			// insert all services into the network from one node
 			// TODO: might be spread more evenly if inserted across nodes
@@ -121,60 +136,6 @@ public class DataAvailabilityEvaluation {
 		}
 		return null;
 		
-	}
-	
-	private EvaluationController createTestEvaluationController() {
-		return new EvaluationController() {
-			
-			@Override
-			public Set<Chord4SDriver> createChord4SNetwork(int numberOfNodes) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			@Override
-			public Set<Chord4SDriver> crashPercentageOfNodes(Set<Chord4SDriver> chord4sDrivers,
-					int percentage) {
-				return null;
-				// TODO Auto-generated method stub
-				
-			}
-		};
-	}
-	
-	private Chord4SDriver createTestDriver() {
-		return new Chord4SDriver() {
-			
-			@Override
-			public void put(Service service) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public Set<Service> lookup(ServiceId serviceId) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-			
-			@Override
-			public void leave() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void join(String bootstrapURL) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void crash() {
-				// TODO Auto-generated method stub
-				
-			}
-		};
 	}
 	
 	public static void main(String[] args) {

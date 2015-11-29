@@ -2,6 +2,8 @@ package com.chord4js.evaluation;
 
 import java.util.Set;
 
+import de.uniba.wiai.lspi.chord.service.ServiceException;
+
 /**
  * Main interface for defining behaviour used to evaluate Chrord4JS.
  * 
@@ -23,8 +25,9 @@ public interface EvaluationController {
 	 * <code>numberOfNodes</code> nodes.
 	 * 
 	 * @param numberOfNodes
+	 * @throws ServiceException 
 	 */
-	Set<Chord4SDriver> createChord4SNetwork(int numberOfNodes);
+	Set<Chord4SDriver> createChord4SNetwork(int numberOfNodes) throws ServiceException;
 	
 	/**
 	 * Crash a percentage of the nodes
