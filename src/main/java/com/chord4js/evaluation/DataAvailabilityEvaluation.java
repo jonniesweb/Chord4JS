@@ -75,7 +75,7 @@ public class DataAvailabilityEvaluation {
 		// iterate over all crash percentages
 		for (int crashPercentage : testCrashPercentages) {
 			
-			EvaluationController controller = new EvaluationControllerImpl();
+			EvaluationController controller = new EvaluationControllerImpl(random);
 			
 			// TODO: extract testing with multiple network sizes
 			int numberOfNodes = EvaluationController.NODES_2_7;
@@ -87,12 +87,9 @@ public class DataAvailabilityEvaluation {
 				return;
 			}
 			
-			// insert all services into the network from one node
-			// TODO: might be spread more evenly if inserted across nodes
-			// randomly
-			ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
 			
 			// for each service, call put on a random node
+			ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
 			for (Service service : services) {
 				// get a random node from the nodeList
 				Chord4SDriver driver = nodesList.get(random.nextInt(nodesList.size()));
