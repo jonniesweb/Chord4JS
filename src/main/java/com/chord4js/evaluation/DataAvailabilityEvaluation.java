@@ -1,17 +1,12 @@
 package com.chord4js.evaluation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.chord4js.Service;
 import com.chord4js.ServiceFactory;
-import com.chord4js.ServiceGenerator;
 import com.chord4js.ServiceId;
 
-import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
@@ -27,7 +22,7 @@ import de.uniba.wiai.lspi.util.logging.Logger;
  * </ol>
  * 
  */
-public class DataAvailabilityEvaluation {
+public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	
 	private static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
@@ -40,48 +35,18 @@ public class DataAvailabilityEvaluation {
 	 */
 	private static final int expectedServicesInterval = 5;
 	
-	/**
-	 * Number of services to generate for inserting into the network
-	 */
-	private static final int numberOfServices = 10000;
-	
-	/**
-	 * ServiceIds that can be queried for in the network
-	 */
-	private List<ServiceFactory> serviceFactories;
-	
-	/**
-	 * Unique services that can be inserted into the network
-	 */
-	private List<Service> services;
-	
-	private Random random = new Random();
-	
 	public DataAvailabilityEvaluation() throws Exception {
 		
-		configure();
-		
-		// generate services
-		ServiceGenerator serviceGenerator = new ServiceGenerator(random);
-		serviceFactories = serviceGenerator.getPossibleServices();
-		services = serviceGenerator.getServices(numberOfServices);
-		
 	}
 	
-	private void configure() {
-		System.setProperty("chord.properties.file", "config/chord4S.properties");
-		PropertiesLoader.loadPropertyFile();
-	}
-	
-	public void start() {
+	public void start(int numberOfNodes) {
 		
 		// iterate over all crash percentages
 		for (int crashPercentage : testCrashPercentages) {
 			
 			EvaluationController controller = new EvaluationControllerImpl(random);
 			
-			// TODO: extract testing with multiple network sizes
-			int numberOfNodes = EvaluationController.NODES_2_7;
+			// setup nodes
 			Set<Chord4SDriver> nodes;
 			try {
 				nodes = controller.createChord4SNetwork(numberOfNodes);
@@ -90,13 +55,7 @@ public class DataAvailabilityEvaluation {
 				return;
 			}
 			
-			// for each service, call put on a random node
-			ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
-			for (Service service : services) {
-				// get a random node from the nodeList
-				Chord4SDriver driver = nodesList.get(random.nextInt(nodesList.size()));
-				driver.put(service);
-			}
+			putServicesOnNodes(nodes);
 			
 			// crash a percentage of the nodes according to crashPercentage
 			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(nodes,
@@ -107,7 +66,7 @@ public class DataAvailabilityEvaluation {
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
 			
 			// display the results of the test
-			System.out.println("number of nodes: " + numberOfNodes + " crash percentage: "
+			log.info("number of nodes: " + numberOfNodes + " crash percentage: "
 					+ crashPercentage + " results: " + results);
 			
 		}
@@ -133,7 +92,8 @@ public class DataAvailabilityEvaluation {
 		for (Chord4SDriver driver : aliveNodes) {
 			
 			// get a random ServiceId in use
-			ServiceFactory serviceFactory = serviceFactories.get(random.nextInt(serviceFactories.size()));
+			ServiceFactory serviceFactory = serviceFactories.get(random.nextInt(serviceFactories
+					.size()));
 			ServiceId serviceId = serviceFactory.getServiceId();
 			
 			// lookup the result
@@ -155,7 +115,7 @@ public class DataAvailabilityEvaluation {
 	
 	public static void main(String[] args) {
 		try {
-			new DataAvailabilityEvaluation().start();
+			new DataAvailabilityEvaluation().evaluate();
 		} catch (Exception e) {
 			log.error("error occurred during execution", e);
 		}

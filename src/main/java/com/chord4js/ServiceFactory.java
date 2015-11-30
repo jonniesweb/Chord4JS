@@ -13,7 +13,7 @@ public class ServiceFactory {
 	 * @param qos
 	 */
 	public ServiceFactory(List<String> layers, List<String> qos) {
-		if (layers == null || qos == null) {
+		if (layers == null) {
 			throw new NullPointerException();
 		}
 		
@@ -37,7 +37,7 @@ public class ServiceFactory {
 		ProviderId providerId = new ProviderId(layers.toArray(new String[] {}), getRandomIP(random));
 		
 		String value = null;
-		if (qos.size() > 0) {
+		if (qos != null && qos.size() > 0) {
 			// get a random qos
 			value = qos.get(random.nextInt(qos.size()));
 		}

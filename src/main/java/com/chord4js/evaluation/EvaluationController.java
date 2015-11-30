@@ -15,17 +15,12 @@ import de.uniba.wiai.lspi.chord.service.ServiceException;
  */
 public interface EvaluationController {
 	
-	// network sizes for evaluations
-	public static final int NODES_2_7 = 2 ^ 7;
-	public static final int NODES_2_11 = 2 ^ 11;
-	public static final int NODES_2_15 = 2 ^ 15;
-	
 	/**
 	 * Create a network of Chord4S instances containing
 	 * <code>numberOfNodes</code> nodes.
 	 * 
 	 * @param numberOfNodes
-	 * @throws ServiceException 
+	 * @throws ServiceException
 	 */
 	Set<Chord4SDriver> createChord4SNetwork(int numberOfNodes) throws ServiceException;
 	

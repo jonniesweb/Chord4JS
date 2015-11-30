@@ -36,9 +36,14 @@ public class Service implements Serializable {
 	 */
 	public Service(ProviderId providerId, String qos) {
 		this.providerId = providerId;
-		ArrayList<String> qosList = new ArrayList<String>();
-		qosList.add(qos);
-		this.qos = qosList;
+		
+		if (qos != null) {
+			ArrayList<String> qosList = new ArrayList<String>();
+			qosList.add(qos);
+			this.qos = qosList;
+		} else {
+			this.qos = null;
+		}
 		
 	}
 	

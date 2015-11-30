@@ -8,11 +8,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
+
+import de.uniba.wiai.lspi.chord.service.ServiceException;
+import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
  * Read in a YAML file of example services and outputs a list of services with
@@ -20,6 +22,8 @@ import com.esotericsoftware.yamlbeans.YamlReader;
  * 
  */
 public class ServiceGenerator {
+	
+	private static final Logger log = Logger.getLogger(ServiceGenerator.class);
 	
 	private Random random;
 	private List<LeafNode> leafNodes = new ArrayList<LeafNode>();
@@ -29,28 +33,34 @@ public class ServiceGenerator {
 		new ServiceGenerator(null);
 	}
 	
-	public ServiceGenerator() throws Exception {
+	public ServiceGenerator() throws ServiceException {
 		this(new Random());
 	}
 	
-	public ServiceGenerator(Random random) throws Exception {
+	public ServiceGenerator(Random random) throws ServiceException {
 		this.random = random;
 		
-		// read yaml file from classpath
-		URL resource = getClass().getClassLoader().getResource("services.yaml");
-		
-		YamlReader reader = new YamlReader(new FileReader(new File(resource.toURI())));
-		
-		List<?> list = (List<?>) reader.read();
-		
-		// create root node
-		BranchNode root = new BranchNode(null, null);
-		
-		// call recursive method, find the leaf nodes
-		processList(root, list);
-		
-		// get all possible services
-		possibleServices = getPossibleServices();
+		try {
+			// read yaml file from classpath
+			URL resource = getClass().getClassLoader().getResource("services.yaml");
+			
+			YamlReader reader = new YamlReader(new FileReader(new File(resource.toURI())));
+			
+			List<?> list = (List<?>) reader.read();
+			
+			// create root node
+			BranchNode root = new BranchNode(null, null);
+			
+			// call recursive method, find the leaf nodes
+			processList(root, list);
+			
+			// get all possible services
+			possibleServices = getPossibleServices();
+			
+		} catch (Exception e) {
+			log.error(e);
+			throw new ServiceException("unable to create the service generator", e);
+		}
 	}
 	
 	/**
@@ -139,7 +149,7 @@ public class ServiceGenerator {
 		return service;
 	}
 	
-	private void processList(BranchNode root, List<?> list) throws Exception {
+	private void processList(BranchNode root, List<?> list) throws YamlException {
 		try {
 			
 			// iterate over each element of the list
