@@ -66,4 +66,8 @@ public class ServiceFactory {
 	private int getRandomOctet(Random random) {
 		return random.nextInt(254) + 1;
 	}
+
+	public ServiceId getServiceId() {
+		return new ServiceId((String[]) layers.toArray());
+	}
 }

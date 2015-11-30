@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.chord4js.Service;
+import com.chord4js.ServiceFactory;
 import com.chord4js.ServiceGenerator;
 import com.chord4js.ServiceId;
 
@@ -47,7 +48,7 @@ public class DataAvailabilityEvaluation {
 	/**
 	 * ServiceIds that can be queried for in the network
 	 */
-	private List<ServiceId> serviceIds;
+	private List<ServiceFactory> serviceFactories;
 	
 	/**
 	 * Unique services that can be inserted into the network
@@ -62,7 +63,7 @@ public class DataAvailabilityEvaluation {
 		
 		// generate services
 		ServiceGenerator serviceGenerator = new ServiceGenerator(random);
-		serviceIds = serviceGenerator.getPossibleServices();
+		serviceFactories = serviceGenerator.getPossibleServices();
 		services = serviceGenerator.getServices(numberOfServices);
 		
 	}
@@ -132,7 +133,8 @@ public class DataAvailabilityEvaluation {
 		for (Chord4SDriver driver : aliveNodes) {
 			
 			// get a random ServiceId in use
-			ServiceId serviceId = serviceIds.get(random.nextInt(serviceIds.size()));
+			ServiceFactory serviceFactory = serviceFactories.get(random.nextInt(serviceFactories.size()));
+			ServiceId serviceId = serviceFactory.getServiceId();
 			
 			// lookup the result
 			int requiredResults = random.nextInt(expectedServicesInterval + 1);

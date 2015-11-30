@@ -22,8 +22,8 @@ import com.esotericsoftware.yamlbeans.YamlReader;
 public class ServiceGenerator {
 	
 	private Random random;
-	ArrayList<LeafNode> leafNodes = new ArrayList<LeafNode>();
-	private ServiceFactory serviceFactory;
+	private List<LeafNode> leafNodes = new ArrayList<LeafNode>();
+	private List<ServiceFactory> possibleServices;
 	
 	public static void main(String[] args) throws Exception {
 		new ServiceGenerator(null);
@@ -32,7 +32,7 @@ public class ServiceGenerator {
 	public ServiceGenerator() throws Exception {
 		this(new Random());
 	}
-
+	
 	public ServiceGenerator(Random random) throws Exception {
 		this.random = random;
 		
@@ -46,11 +46,11 @@ public class ServiceGenerator {
 		// create root node
 		BranchNode root = new BranchNode(null, null);
 		
-		// call recursive method
+		// call recursive method, find the leaf nodes
 		processList(root, list);
 		
-		// create the ServiceFactory
-		serviceFactory = createRandomServiceFromLeafs(leafNodes);
+		// get all possible services
+		possibleServices = getPossibleServices();
 	}
 	
 	/**
@@ -61,11 +61,30 @@ public class ServiceGenerator {
 	 * @return
 	 */
 	private ServiceFactory createRandomServiceFromLeafs(List<? extends Node> leafNodes) {
-		LinkedList<String> layers = new LinkedList<String>();
 		ArrayList<String> qos = new ArrayList<String>();
 		
 		// get a random leaf from the list
 		Node currentNode = leafNodes.get(random.nextInt(leafNodes.size()));
+		
+		List<String> layers = getLayers(currentNode);
+		
+		// add the functional layers to the Service object
+		ServiceFactory serviceFactory = new ServiceFactory(layers, qos);
+		
+		return serviceFactory;
+	}
+	
+	/**
+	 * Get the layers from the given leaf node
+	 * 
+	 * @param currentNode
+	 * @return
+	 */
+	private List<String> getLayers(Node currentNode) {
+		// private LinkedList<String> getLayers(ArrayList<String> qos, Node
+		// currentNode) {
+		
+		LinkedList<String> layers = new LinkedList<String>();
 		
 		// ignore null nodes and the root node which doesn't have a name
 		while (currentNode != null && currentNode.getName() != null) {
@@ -74,18 +93,14 @@ public class ServiceGenerator {
 			// we're going from child to root)
 			layers.addFirst(currentNode.getName());
 			// add QOS to Service, if any
-			if (currentNode.getQos() != null) {
-				qos.addAll(currentNode.getQos());
-			}
+			// if (currentNode.getQos() != null) {
+			// qos.addAll(currentNode.getQos());
+			// }
 			
 			// update the current node to the node's parent
 			currentNode = currentNode.getParent();
 		}
-		
-		// add the functional layers to the Service object
-		ServiceFactory serviceFactory = new ServiceFactory(layers, qos);
-		
-		return serviceFactory;
+		return layers;
 	}
 	
 	/**
@@ -275,24 +290,53 @@ public class ServiceGenerator {
 	}
 	
 	/**
-	 * From the input file, return all of the ServiceIds that exist.
+	 * From the input file, return all of the ServiceFactories that exist.
 	 * 
 	 * @return
 	 */
-	public List<ServiceId> getPossibleServices() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ServiceFactory> getPossibleServices() {
+		if (possibleServices != null) {
+			return possibleServices;
+		}
+		
+		ArrayList<ServiceFactory> list = new ArrayList<>();
+		
+		// iterate over all leaf nodes, getting the layers and creating a
+		// serviceId
+		for (LeafNode node : leafNodes) {
+			List<String> layers = getLayers(node);
+			list.add(new ServiceFactory(layers, null));
+		}
+		
+		possibleServices = list;
+		
+		return list;
 	}
 	
 	/**
-	 * Generate numberOfServices number of random Services.
+	 * Generate n number of random Services.
 	 * 
-	 * @param numberOfServices
+	 * @param amount
 	 * @return
 	 */
-	public List<Service> getServices(int numberOfServices) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Service> getServices(int amount) {
+		
+		// get all possible ServiceFactories
+		List<ServiceFactory> services = getPossibleServices();
+		
+		ArrayList<Service> list = new ArrayList<Service>();
+		
+		// create 'amount' number of services, adding them to the list
+		for (int i = 0; i < amount; i++) {
+			// get a random service factory
+			ServiceFactory factory = services.get(random.nextInt(services.size()));
+			
+			// tell the factory to create a random service
+			Service service = factory.createRandom(random);
+			list.add(service);
+			
+		}
+		
+		return list;
 	}
-	
 }
