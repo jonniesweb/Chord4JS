@@ -279,7 +279,7 @@ public class ServiceGenerator {
 	 * 
 	 * @return
 	 */
-	public Set<ServiceId> getPossibleServices() {
+	public List<ServiceId> getPossibleServices() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -290,7 +290,7 @@ public class ServiceGenerator {
 	 * @param numberOfServices
 	 * @return
 	 */
-	public Set<Service> getServices(int numberOfServices) {
+	public List<Service> getServices(int numberOfServices) {
 		// TODO Auto-generated method stub
 		return null;
 	}

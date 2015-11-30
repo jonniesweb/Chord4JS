@@ -1,8 +1,10 @@
 package com.chord4js.evaluation;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.chord4js.Service;
 import com.chord4js.ServiceGenerator;
@@ -43,14 +45,14 @@ public class DataAvailabilityEvaluation {
 	private static final int numberOfServices = 10000;
 	
 	/**
-	 * ServiceIds that can be queried for in the network.
+	 * ServiceIds that can be queried for in the network
 	 */
-	private Set<ServiceId> serviceIds;
+	private List<ServiceId> serviceIds;
 	
 	/**
 	 * Unique services that can be inserted into the network
 	 */
-	private Set<Service> services;
+	private List<Service> services;
 	
 	private Random random = new Random();
 	
@@ -69,7 +71,7 @@ public class DataAvailabilityEvaluation {
 		System.setProperty("chord.properties.file", "config/chord4S.properties");
 		PropertiesLoader.loadPropertyFile();
 	}
-
+	
 	public void start() {
 		
 		// iterate over all crash percentages
@@ -86,7 +88,6 @@ public class DataAvailabilityEvaluation {
 				log.fatal("unable to create the network", e);
 				return;
 			}
-			
 			
 			// for each service, call put on a random node
 			ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
@@ -119,20 +120,35 @@ public class DataAvailabilityEvaluation {
 	 * Note: Each query expects a random number of entries back, or else the
 	 * query fails.
 	 * 
+	 * Note: may want to use the async lookup call since it may be faster
+	 * 
 	 * @param aliveNodes
 	 * @return
 	 */
 	private AggregateQueryResults runRandomQueries(Set<Chord4SDriver> aliveNodes) {
-		// iterate over all the node's drivers
+		AggregateQueryResults queryResults = new AggregateQueryResults();
+		
+		// iterate over all the alive nodes
 		for (Chord4SDriver driver : aliveNodes) {
 			
 			// get a random ServiceId in use
-			ServiceId serviceId = null; // TODO
-			driver.lookup(serviceId);
+			ServiceId serviceId = serviceIds.get(random.nextInt(serviceIds.size()));
 			
+			// lookup the result
+			int requiredResults = random.nextInt(expectedServicesInterval + 1);
+			Set<Service> result = driver.lookup(serviceId, requiredResults);
+			
+			// mark query as a success if we receive enough results, fail
+			// otherwise
+			if (result != null && result.size() >= requiredResults) {
+				queryResults.success();
+				
+			} else {
+				queryResults.fail();
+			}
 		}
-		return null;
 		
+		return queryResults;
 	}
 	
 	public static void main(String[] args) {
@@ -146,17 +162,17 @@ public class DataAvailabilityEvaluation {
 	/**
 	 * A class to collect the results of successful and failed queries.
 	 */
-	public class AggregateQueryResults {
+	public static class AggregateQueryResults {
 		
-		private Integer successfulQuery = 0;
-		private Integer failedQuery = 0;
+		private AtomicInteger successfulQuery = new AtomicInteger();
+		private AtomicInteger failedQuery = new AtomicInteger();
 		
 		/**
 		 * Mark that a query successfully completed.
 		 */
 		public void success() {
 			synchronized (successfulQuery) {
-				successfulQuery++;
+				successfulQuery.incrementAndGet();
 			}
 		}
 		
@@ -165,16 +181,16 @@ public class DataAvailabilityEvaluation {
 		 */
 		public void fail() {
 			synchronized (failedQuery) {
-				failedQuery++;
+				failedQuery.incrementAndGet();
 			}
 		}
 		
-		public Integer getSuccessfulQueries() {
-			return successfulQuery;
+		public int getSuccessfulQueries() {
+			return successfulQuery.intValue();
 		}
 		
-		public Integer getFailedQueries() {
-			return failedQuery;
+		public int getFailedQueries() {
+			return failedQuery.intValue();
 		}
 		
 		@Override
