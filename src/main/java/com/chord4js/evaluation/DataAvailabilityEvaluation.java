@@ -7,7 +7,6 @@ import com.chord4js.Service;
 import com.chord4js.ServiceFactory;
 import com.chord4js.ServiceId;
 
-import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -24,7 +23,7 @@ import de.uniba.wiai.lspi.util.logging.Logger;
  */
 public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	
-	private static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
+	static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
 	private static final int[] testCrashPercentages = new int[] { 5, 10, 15, 20, 25, 30, 35, 40,
 			45, 50, 55, 60 };
@@ -46,19 +45,12 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			
 			EvaluationController controller = new EvaluationControllerImpl(random);
 			
-			// setup nodes
-			Set<Chord4SDriver> nodes;
-			try {
-				nodes = controller.createChord4SNetwork(numberOfNodes);
-			} catch (ServiceException e) {
-				log.fatal("unable to create the network", e);
-				return;
-			}
+			createNetwork(numberOfNodes, controller);
 			
-			putServicesOnNodes(nodes);
+			putServicesOnNodes(getNodes());
 			
 			// crash a percentage of the nodes according to crashPercentage
-			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(nodes,
+			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(),
 					crashPercentage);
 			
 			// get nodes to query for services with random expected number of
@@ -66,8 +58,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
 			
 			// display the results of the test
-			log.info("number of nodes: " + numberOfNodes + " crash percentage: "
-					+ crashPercentage + " results: " + results);
+			log.info("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercentage
+					+ " results: " + results);
 			
 		}
 	}

@@ -11,8 +11,11 @@ import com.chord4js.ServiceGenerator;
 
 import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
+import de.uniba.wiai.lspi.util.logging.Logger;
 
 public abstract class AbstractEvaluation {
+	
+	private static final Logger log = Logger.getLogger(AbstractEvaluation.class);
 	
 	// network sizes for evaluations
 	public static final int NODES_2_7 = 2 ^ 7;
@@ -35,6 +38,7 @@ public abstract class AbstractEvaluation {
 	 * Unique services that can be inserted into the network
 	 */
 	protected List<Service> services;
+	private Set<Chord4SDriver> nodes;
 	
 	public AbstractEvaluation() throws ServiceException {
 		configure();
@@ -69,10 +73,15 @@ public abstract class AbstractEvaluation {
 	public void evaluate() {
 		
 		start(NODES_2_7);
+		cleanupNodes();
+		
 		start(NODES_2_11);
+		cleanupNodes();
+		
 		start(NODES_2_15);
+		cleanupNodes();
 	}
-
+	
 	protected void putServicesOnNodes(Set<Chord4SDriver> nodes) {
 		// for each service, call put on a random node
 		ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
@@ -81,6 +90,41 @@ public abstract class AbstractEvaluation {
 			Chord4SDriver driver = nodesList.get(random.nextInt(nodesList.size()));
 			driver.put(service);
 		}
+	}
+	
+	/**
+	 * Cleanup/remove all nodes. Must create a new network afterwards.
+	 */
+	public void cleanupNodes() {
+		nodes.forEach((n) -> n.leave());
+		
+		// if performance is bad with calling leave() call crash() instead
+		// nodes.forEach((n) -> n.crash());
+		
+		nodes = null;
+	}
+	
+	/**
+	 * @param numberOfNodes
+	 * @param controller
+	 * @return
+	 */
+	protected Set<Chord4SDriver> createNetwork(int numberOfNodes, EvaluationController controller) {
+		try {
+			setNodes(controller.createChord4SNetwork(numberOfNodes));
+		} catch (ServiceException e) {
+			log.fatal("unable to create the network", e);
+			return null;
+		}
+		return getNodes();
+	}
+	
+	public Set<Chord4SDriver> getNodes() {
+		return nodes;
+	}
+	
+	public void setNodes(Set<Chord4SDriver> nodes) {
+		this.nodes = nodes;
 	}
 	
 }

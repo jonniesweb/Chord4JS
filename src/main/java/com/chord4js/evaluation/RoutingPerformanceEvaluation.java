@@ -27,21 +27,14 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 	public void start(int numberOfNodes) {
 		EvaluationControllerImpl controller = new EvaluationControllerImpl(random);
 		
-		// create nodes
-		Set<Chord4SDriver> nodes;
-		try {
-			nodes = controller.createChord4SNetwork(numberOfNodes);
-		} catch (ServiceException e) {
-			log.fatal("unable to create the network", e);
-			return;
-		}
+		createNetwork(numberOfNodes, controller);
 		
 		// add services to nodes
-		putServicesOnNodes(nodes);
+		putServicesOnNodes(getNodes());
 		
 		// iterate over all expected results sizes, querying the nodes
 		for (int expected : expectedResults) {
-			double averageHops = queryNodesAndComputeAverage(nodes, expected);
+			double averageHops = queryNodesAndComputeAverage(getNodes(), expected);
 			log.info("number of nodes: " + numberOfNodes + " expected number of results: "
 					+ expected + " average hops: " + averageHops);
 		}
@@ -73,6 +66,7 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 			queries++;
 		}
 		
+		// calculate average
 		return totalHops / (double) queries;
 	}
 	
