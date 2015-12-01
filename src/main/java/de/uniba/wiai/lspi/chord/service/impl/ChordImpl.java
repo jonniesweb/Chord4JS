@@ -31,7 +31,6 @@ import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,10 +42,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.chord4js.ProviderId;
-import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
-import com.chord4js.ServiceId;
-import com.chord4js.Unit;
 
 import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Node;
@@ -56,6 +52,7 @@ import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.AsynChord;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.ChordCallback;
 import de.uniba.wiai.lspi.chord.service.ChordFuture;
@@ -737,9 +734,13 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	}
 
 	public final Set<Service> retrieve(C4SMsgRetrieve msg) {
+		return retrieveR(msg).services;
+	}
+	
+	public final C4SRetrieveResponse retrieveR(C4SMsgRetrieve msg) {
 	  final Set<Service> values = new HashSet<>();
-	  if (msg.amount <= 0  ) return values;
-	  if (msg.span.empty() ) return values;
+	  if (msg.amount <= 0  ) return new C4SRetrieveResponse(values);
+	  if (msg.span.empty() ) return new C4SRetrieveResponse(values);
 
 		// determine ID span for the service id (wildcarded)
 		boolean debug = this.logger.isEnabledFor(DEBUG);

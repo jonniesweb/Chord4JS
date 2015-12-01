@@ -48,6 +48,7 @@ import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -373,10 +374,10 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Set<Service> retrieveEntries(C4SMsgRetrieve msg)
+	public final C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
-	  if (msg.amount <= 0 ) return new HashSet<>();
-	  if (msg.span.empty()) return new HashSet<>();
+	  if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
+	  if (msg.span.empty()) return new C4SRetrieveResponse(new HashSet<>());
 	  
 		// Possible, but rare situation: a new node has joined which now is
 		// responsible for the id!
@@ -395,8 +396,8 @@ public final class NodeImpl extends Node {
 		// for this purpose create a copy of the Set in order to allow the
 		// thread retrieving the entries to modify the Set without modifying the
 		// internal Set of entries. sven
-		Set<Service> results = entries.getEntries(msg);
-		final int moreResults = msg.amount - results.size();
+		C4SRetrieveResponse retrieveResponse = new C4SRetrieveResponse(new HashSet<>());
+		final int moreResults = msg.amount - retrieveResponse.size();
 		if (moreResults > 0) {
 		  final Node next = references.getSuccessor();
 		  if (next != null) {
@@ -404,12 +405,12 @@ public final class NodeImpl extends Node {
 		    if (msg.span.contains(nextId)) {
 		      final C4SMsgRetrieve msg2 = msg.Subset(next.getNodeID(), moreResults);
 		      // Add results from futher down the segment
-		      results.addAll(next.retrieveEntries(msg2));
+		      retrieveResponse.add(next.retrieveEntries(msg2));
 		    }
 		  }
 		}
 		
-		return results;
+		return retrieveResponse;
 	}
 
 	/**

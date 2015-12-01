@@ -44,6 +44,7 @@ import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
@@ -232,14 +233,14 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @return The retrieved entries.
 	 * @throws CommunicationException
 	 */
-	public Set<Service> retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
+	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.ACCEPT_ENTRIES);
 		this.notifyInvocationListeners(InvocationListener.RETRIEVE_ENTRIES);
-		Set<Service> s = this.node.retrieveEntries(msg);
-		this
-				.notifyInvocationListenersFinished(InvocationListener.RETRIEVE_ENTRIES);
-		return s;
+		C4SRetrieveResponse retrieveResponse = this.node.retrieveEntries(msg);
+		
+		this.notifyInvocationListenersFinished(InvocationListener.RETRIEVE_ENTRIES);
+		return retrieveResponse;
 	}
 
 	/**

@@ -31,9 +31,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.chord4js.ProviderId;
-import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
-import com.chord4js.ServiceId;
 
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
@@ -242,6 +240,17 @@ public interface Chord {
 	public abstract Set<Service> retrieve(C4SMsgRetrieve x)
 	    throws ServiceException;
 
+	/**
+	 * Same as {@link #retrieve(C4SMsgRetrieve)}, except that it returns
+	 * information related to the operation of retrieving this data.
+	 * 
+	 * @param x
+	 * @return
+	 * @throws ServiceException
+	 */
+	public abstract C4SRetrieveResponse retrieveR(C4SMsgRetrieve x)
+		    throws ServiceException;
+	
 	/**
 	 * Removes the given object stored under given key from the network.
 	 * 

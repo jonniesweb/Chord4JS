@@ -44,6 +44,7 @@ import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 
 public final class RMIProxy extends Proxy {
 
@@ -291,7 +292,7 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
+	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
 		this.testConnection();
 		try {
 			return this.remoteNode.retrieveEntries(id); 

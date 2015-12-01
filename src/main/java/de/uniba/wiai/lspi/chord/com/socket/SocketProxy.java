@@ -36,7 +36,6 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.security.Provider;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +53,7 @@ import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -836,7 +836,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 		}
 	}
 
-	public Set<Service> retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
+	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg) throws CommunicationException {
 		this.makeSocketAvailable();
 
 		logger.debug("Trying to retrieve entries for ID " + msg);
@@ -861,7 +861,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 					response.getThrowable());
 		} else {
 			try {
-				Set<Service> result = (Set<Service>) response.getResult();
+				C4SRetrieveResponse result = (C4SRetrieveResponse) response.getResult();
 				return result;
 			} catch (ClassCastException cce) {
 				throw new CommunicationException(

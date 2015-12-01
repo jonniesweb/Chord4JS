@@ -27,16 +27,6 @@
  ***************************************************************************/
 package de.uniba.wiai.lspi.chord.com.local;
 
-import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Node;
-import de.uniba.wiai.lspi.chord.com.Proxy;
-import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
-import de.uniba.wiai.lspi.chord.data.ID;
-import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
-import de.uniba.wiai.lspi.util.logging.Logger;
-
-import java.security.Provider;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +34,16 @@ import java.util.Set;
 
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
+
+import de.uniba.wiai.lspi.chord.com.CommunicationException;
+import de.uniba.wiai.lspi.chord.com.Node;
+import de.uniba.wiai.lspi.chord.com.Proxy;
+import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
+import de.uniba.wiai.lspi.chord.data.ID;
+import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
+import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
  * This class represents a {@link Proxy} for the protocol that allows 
@@ -273,7 +273,7 @@ public final class ThreadProxy extends Proxy {
 		this.endpoint.ping();
 	}
 
-	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
+	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
 		this.checkValidity();
 		logger.debug("Trying to execute retrieve().");
 		logger.debug("Found endpoint " + this.endpoint);

@@ -48,6 +48,7 @@ import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 
 public final class RMIEndpoint extends Endpoint implements RemoteNode {
 
@@ -185,7 +186,7 @@ public final class RMIEndpoint extends Endpoint implements RemoteNode {
 
 	}
 
-	public Set<Service> retrieveEntries(C4SMsgRetrieve id) throws RemoteException,
+	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve id) throws RemoteException,
 			CommunicationException {
 		return this.node.retrieveEntries(id);
 	}

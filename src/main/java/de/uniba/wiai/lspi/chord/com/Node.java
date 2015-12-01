@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.Set;
 
 import com.chord4js.ProviderId;
-import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 
 /**
  * Provides methods which remote nodes can invoke.
@@ -210,11 +210,12 @@ public abstract class Node {
 	 * Returns all entries stored under the given ID.
 	 * 
 	 * @param id
-	 * @return A {@link Set} of entries associated with <code>id</code>.
+	 * @return A {@link C4SRetrieveResponse} of entries associated with
+	 *         <code>id</code>.
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract Set<Service> retrieveEntries(C4SMsgRetrieve x)
+	public abstract C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve x)
 			throws CommunicationException;
 
 	/**
