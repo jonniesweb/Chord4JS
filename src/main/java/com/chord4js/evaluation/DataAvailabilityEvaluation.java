@@ -82,6 +82,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	 * 
 	 * Note: may want to use the async lookup call since it may be faster
 	 * 
+	 * Note: may want to run more queries than just the size of the aliveNodes
+	 * 
 	 * @param aliveNodes
 	 * @return
 	 */

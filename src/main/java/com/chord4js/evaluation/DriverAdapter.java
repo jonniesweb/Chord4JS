@@ -7,6 +7,7 @@ import com.chord4js.ServiceId;
 
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 
@@ -29,14 +30,24 @@ public class DriverAdapter implements Chord4SDriver {
 	
 	@Override
 	public Set<Service> lookup(ServiceId serviceId) {
-		return chordImpl.retrieve(new C4SMsgRetrieve(serviceId, null, 1));
+		return lookupR(serviceId).services;
 	}
 	
 	@Override
-	public Set<Service> lookup(ServiceId serviceId, int amount) {
-		return chordImpl.retrieve(new C4SMsgRetrieve(serviceId, null, amount));
+	public Set<Service> lookup(ServiceId serviceId, int requiredResults) {
+		return lookupR(serviceId, requiredResults).services;
 	}
 	
+	@Override
+	public C4SRetrieveResponse lookupR(ServiceId serviceId) {
+		return chordImpl.retrieveR(new C4SMsgRetrieve(serviceId, null, 1));
+	}
+
+	@Override
+	public C4SRetrieveResponse lookupR(ServiceId serviceId, int requiredResults) {
+		return chordImpl.retrieveR(new C4SMsgRetrieve(serviceId, null, requiredResults));
+	}
+
 	@Override
 	public void join(URL bootstrapURL) throws ServiceException {
 		chordImpl.join(bootstrapURL);

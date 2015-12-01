@@ -6,6 +6,7 @@ import com.chord4js.Service;
 import com.chord4js.ServiceId;
 
 import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 
 /**
@@ -43,10 +44,28 @@ public interface Chord4SDriver {
 	Set<Service> lookup(ServiceId serviceId, int amount);
 	
 	/**
+	 * Same as {@link #lookup(ServiceId)}, but gets more info about the query.
+	 * 
+	 * @param serviceId
+	 * @return
+	 */
+	C4SRetrieveResponse lookupR(ServiceId serviceId);
+	
+	/**
+	 * Same as {@link #lookup(ServiceId, int)}, but gets more info about the
+	 * query.
+	 * 
+	 * @param serviceId
+	 * @param requiredResults
+	 * @return
+	 */
+	C4SRetrieveResponse lookupR(ServiceId serviceId, int requiredResults);
+	
+	/**
 	 * Join the network by connecting to an existing chord node at boostrapURL
 	 * 
 	 * @param bootstrapURL
-	 * @throws ServiceException 
+	 * @throws ServiceException
 	 */
 	void join(URL bootstrapURL) throws ServiceException;
 	
