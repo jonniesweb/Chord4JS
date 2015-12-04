@@ -203,7 +203,7 @@ final class References {
 		ID idOfclosestNode = orderedIDList.get(index);
 		closestNode = foundNodes.get(idOfclosestNode);
 		if (closestNode == null) {
-			throw new NullPointerException("closestNode must not be null!");
+			//throw new NullPointerException("closestNode must not be null!");
 		}
 
 		/*
@@ -289,7 +289,7 @@ final class References {
 					+ " at node "
 					+ this.localID.toString()
 					+ " is "
-					+ closestNode.getNodeID()
+					+ (closestNode!= null ? closestNode.getNodeID() : localID)
 					+ " with closestNodeFT="
 					+ (closestNodeFT == null ? "null" : ""
 							+ closestNodeFT.getNodeID())
