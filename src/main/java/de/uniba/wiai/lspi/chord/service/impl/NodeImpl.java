@@ -376,6 +376,7 @@ public final class NodeImpl extends Node {
 	@Override
 	public final C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
+	  this.logger.debug("retrieveEntries: " + msg);
 	  if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
 	  if (msg.span.empty()) return new C4SRetrieveResponse(new HashSet<>());
 	  
@@ -385,7 +386,7 @@ public final class NodeImpl extends Node {
 				&& !msg.span.bgn().isInInterval(references.getPredecessor().getNodeID()
 				                               ,nodeID)) {
 			this.logger.fatal("The rare situation has occured at time "
-					+ System.currentTimeMillis() + ", id to look up=" + msg.span.bgn()
+					+ System.currentTimeMillis() + ", id to look up=" + msg.span
 					+ ", id of local node=" + this.nodeID
 					+ ", id of predecessor="
 					+ this.references.getPredecessor().getNodeID());
@@ -404,6 +405,7 @@ public final class NodeImpl extends Node {
 		    final ID nextId = next.getNodeID();
 		    if (msg.span.contains(nextId)) {
 		      final C4SMsgRetrieve msg2 = msg.Subset(next.getNodeID(), moreResults);
+		      this.logger.debug("asking node " + nextId + " for " + msg2);
 		      // Add results from futher down the segment
 		      retrieveResponse.add(next.retrieveEntries(msg2));
 		    }

@@ -32,4 +32,8 @@ public class C4SMsgRetrieve implements Serializable {
   public C4SMsgRetrieve Subset(ID newMin, int amt) {
     return new C4SMsgRetrieve(svcId, constraints, amt, span.subsetMin(newMin));
   }
+  
+  @Override
+  public String toString()
+  { return "retrieve " + amount + " of " + svcId + "(" + span + ")" + "; qos: " + constraints; }
 }

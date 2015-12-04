@@ -52,6 +52,18 @@ public class ServiceId implements Serializable, Comparable<ServiceId> {
   public String getProviderPart() {
     return parts[kPartsSemantic];
   }
+  
+  public String partsDisplay() {
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < parts.length; ++i) {
+      sb.append((parts[i] != null) ? parts[i] : "");
+      if ((i+1)!= parts.length) sb.append(".");
+    }
+    return sb.toString();
+  }
+  
+  @Override
+  public String toString() { return "serviceId: " + partsDisplay(); }
 	
 	public int partsGivenCount() {
 	  assert(parts.length == kPartsAll);

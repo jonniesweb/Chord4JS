@@ -174,6 +174,10 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
     { return new IdSpan(Optional.of(new SpanInclusive(bgn, end))); }
 
 	  public boolean empty() { return !span.isPresent(); }
+	  
+	  @Override
+	  public String toString()
+	  { return empty() ? "[<empty>]" : "[" + bgn() + ", " + end() + "]"; }
 
     public boolean contains(final ID x) {
       return span.map((SpanInclusive s) -> {

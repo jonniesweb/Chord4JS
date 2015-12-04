@@ -18,8 +18,6 @@ public class ProviderId extends ServiceId {
 	}
 
 	@Override
-	public String toString() {
-		return "providerId: " + parts.toString();
-	}
+	public String toString() { return "providerId: " + partsDisplay(); }
 	
 }
