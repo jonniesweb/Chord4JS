@@ -8,7 +8,7 @@ import java.io.Serializable;
  * ASSUME: All service names are an N part semantic name + a provider id (all
  * part are strings)
  */
-public class ServiceId implements Serializable {
+public class ServiceId implements Serializable, Comparable<ServiceId> {
 	
 	/**
    * 
@@ -60,4 +60,20 @@ public class ServiceId implements Serializable {
 	  
 	  return parts.length;
 	}
+
+  @Override
+  public int compareTo(ServiceId o) {
+    for (int i = 0; i < parts.length; ++i) {
+      final boolean aNull = parts[i] == null;
+      final boolean bNull = parts[i] == null;
+      if (aNull && bNull) continue;
+      if (aNull) return -1;
+      if (bNull) return  1;
+      
+      final int c = parts[i].compareTo(o.parts[i]);
+      if (c != 0) return c;
+    }
+
+    return 0;
+  }
 }
