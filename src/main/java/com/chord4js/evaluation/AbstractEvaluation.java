@@ -18,9 +18,9 @@ public abstract class AbstractEvaluation {
 	private static final Logger log = Logger.getLogger(AbstractEvaluation.class);
 	
 	// network sizes for evaluations
-	public static final int NODES_2_7 = 2 ^ 7;
-	public static final int NODES_2_11 = 2 ^ 11;
-	public static final int NODES_2_15 = 2 ^ 15;
+	public static final int NODES_2_7  = 1 <<  7;
+	public static final int NODES_2_11 = 1 << 11;
+	public static final int NODES_2_15 = 1 << 15;
 	
 	/**
 	 * Number of services to generate for inserting into the network
