@@ -192,7 +192,7 @@ final class Entries {
   		  if (!msg.constraints.satisfies(s)) continue;
   		  svcs.add(s);
   		  
-  		  if (msg.amount >= svcs.size()) break;
+  		  if (msg.amount <= svcs.size()) break;
   		}
 		}
 		

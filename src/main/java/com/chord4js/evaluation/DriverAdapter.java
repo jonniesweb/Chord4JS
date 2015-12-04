@@ -2,6 +2,7 @@ package com.chord4js.evaluation;
 
 import java.util.Set;
 
+import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
 import com.chord4js.ServiceId;
 
@@ -45,7 +46,7 @@ public class DriverAdapter implements Chord4SDriver {
 
 	@Override
 	public C4SRetrieveResponse lookupR(ServiceId serviceId, int requiredResults) {
-		return chordImpl.retrieveR(new C4SMsgRetrieve(serviceId, null, requiredResults));
+		return chordImpl.retrieveR(new C4SMsgRetrieve(serviceId, new QoSConstraints(), requiredResults));
 	}
 
 	@Override

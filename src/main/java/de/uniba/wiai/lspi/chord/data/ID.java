@@ -111,7 +111,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	}
 	
 	private static void partHashSet(final BitSet dst, final int dstOffset, final BitSet src, final int srcLen) {
-	  assert(dstOffset + dst.size() <= srcLen);
+	  assert(dstOffset + srcLen <= dst.size());
 	  for (int i = 0; i < Math.min(src.size(), srcLen); ++i)
 	    dst.set(dstOffset + i, src.get(i));
 	}

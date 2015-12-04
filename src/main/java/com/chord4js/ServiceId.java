@@ -39,7 +39,7 @@ public class ServiceId implements Serializable, Comparable<ServiceId> {
 			throw new IllegalArgumentException("Semantic name has too few parts");
 		
 		for (int i = 0; i < semanticName.length; ++i) {
-		  assert(semanticName[i] == null);
+		  assert(semanticName[i] != null);
 		  parts[i] = semanticName[i];
 		}
 	}

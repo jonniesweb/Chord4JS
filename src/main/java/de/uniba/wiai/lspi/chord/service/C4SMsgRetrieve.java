@@ -16,6 +16,7 @@ public class C4SMsgRetrieve implements Serializable {
   final public ID.IdSpan      span;
   
   public C4SMsgRetrieve(ServiceId a, QoSConstraints b, int amt) {
+    assert(b != null);
     svcId       = a;
     constraints = b;
     amount      = amt;
