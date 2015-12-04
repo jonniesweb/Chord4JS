@@ -68,6 +68,6 @@ public class ServiceFactory {
 	}
 
 	public ServiceId getServiceId() {
-		return new ServiceId((String[]) layers.toArray());
+		return new ServiceId(layers.toArray(new String[] {}));
 	}
 }

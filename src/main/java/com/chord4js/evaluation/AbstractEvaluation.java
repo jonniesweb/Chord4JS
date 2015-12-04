@@ -96,7 +96,8 @@ public abstract class AbstractEvaluation {
 	 * Cleanup/remove all nodes. Must create a new network afterwards.
 	 */
 	public void cleanupNodes() {
-		nodes.forEach((n) -> n.leave());
+	  if (nodes != null)
+	    nodes.forEach((n) -> n.crash());
 		
 		// if performance is bad with calling leave() call crash() instead
 		// nodes.forEach((n) -> n.crash());

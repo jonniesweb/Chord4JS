@@ -33,16 +33,23 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	 * find when querying the network.
 	 */
 	private static final int expectedServicesInterval = 5;
-	
+	private int crashPercent = 0;
 	public DataAvailabilityEvaluation() throws Exception {
 		
 	}
 	
+	public void evaluate() {
+	  // iterate over all crash percentages outside since we need to tear down the network after each %
+	  for (int x : testCrashPercentages) {
+	    crashPercent = x;
+	    super.evaluate();
+	  }
+	}
+	
 	public void start(int numberOfNodes) {
 		
-		// iterate over all crash percentages
-		for (int crashPercentage : testCrashPercentages) {
-			
+		
+	  {
 			EvaluationController controller = new EvaluationControllerImpl(random);
 			
 			createNetwork(numberOfNodes, controller);
@@ -50,15 +57,14 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			putServicesOnNodes(getNodes());
 			
 			// crash a percentage of the nodes according to crashPercentage
-			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(),
-					crashPercentage);
+			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(), crashPercent);
 			
 			// get nodes to query for services with random expected number of
 			// results
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
 			
 			// display the results of the test
-			log.info("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercentage
+			log.info("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercent
 					+ " results: " + results);
 			
 		}
