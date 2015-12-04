@@ -87,7 +87,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
   static {
     idMin = new ID();
     idMax = new ID();
-    idMax.id.set(0, idMax.id.size());
+    idMax.id.set(0, kTotalBitLen);
   }
 
 	/**
@@ -151,8 +151,8 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	private static BitSet bitsetArithPwrOf2(final BitSet _bs, final int pwrOf2, final boolean addition) {
     // The bitset is defined as big-endian unsigned, i.e. (idx 0 is highest bit)
     final BitSet bs = (BitSet)_bs.clone();
-    assert(pwrOf2 < bs.size());
-    for (int i = bs.size() - 1 - pwrOf2; i >= 0; --i) {
+    assert(pwrOf2 < kTotalBitLen);
+    for (int i = kTotalBitLen - 1 - pwrOf2; i >= 0; --i) {
       bs.flip(i);
       // add/sub for unsigned binary is the same, except we bail if (set == addition) after flip
       if (bs.get(i) == addition) break;
@@ -222,7 +222,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	  
 	  final BitSet bsEndIncl = (BitSet)bgn.id.clone();
 	  final Fn2<Integer, Integer, Unit> endFillBits = (Integer offset, Integer len) -> {
-	    assert(offset + len <= bgn.id.size());
+	    assert(offset + len <= kTotalBitLen);
 	    bsEndIncl.set(offset, offset + len);
 	    return Unit.U;
 	  };
@@ -240,20 +240,11 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	  return new ID(bitsetResize(BitSet.valueOf(blob), kTotalBitLen));
   }
 
-	public ID(ProviderId x) {
-    id = hashServiceId(x);
-    assert(id.size() == kTotalBitLen);
-  }
+	public ID(ProviderId x) { id = hashServiceId(x); }
 	
-	private ID() {
-	  id = new BitSet(kTotalBitLen);
-	  assert(id.size() == kTotalBitLen);
-	}
+	private ID() { id = new BitSet(kTotalBitLen); }
 	
-	private ID(BitSet x) {
-	  id = x;
-	  assert(id.size() == kTotalBitLen);
-	}
+	private ID(BitSet x) { id = x; }
 	
 	@Override
 	public ID clone() { return new ID((BitSet)id.clone()); }
@@ -271,9 +262,17 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	public final String toHexString(int numberOfBytes) {
 
 		// number of displayed bytes must be in interval [1, this.id.size]
-	  final byte[] ary = this.id.toByteArray();
+	  final int    kNumByte  = (kTotalBitLen + 7) / 8; // BitSet size cannot be specified exactly.
+	  final byte[] ary       = new byte[kNumByte];
+	  final int    aryBits   = ary.length * 8;
+	  final int    aryBitPad = aryBits - kTotalBitLen;
+	  for (int i = aryBitPad; i < aryBits; ++i) {
+	    final int bitIdx = i - aryBitPad;
+	    // note that ID is big-endian encoded
+	    ary[i/8] |= (id.get(bitIdx) ? 1 : 0) << (7 - (i % 8));
+	  }
 		int displayBytes = Math.max(1, Math.min(numberOfBytes, ary.length));
-
+		
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < displayBytes; i++) {
 
@@ -307,7 +306,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	 * @return Length of this ID measured in bits.
 	 */
 	public final int getLength() {
-		return this.id.size();
+		return kTotalBitLen;
 	}
 
 	/**
@@ -321,9 +320,9 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	 *         the maximum ID.
 	 */
 	public final ID addPowerOfTwo(final int powerOfTwo) {
-	  if ((powerOfTwo < 0) || (powerOfTwo >= id.size())) {
+	  if ((powerOfTwo < 0) || (powerOfTwo >= kTotalBitLen)) {
       throw new IllegalArgumentException(
-          "The power of two is out of range! It must be in the interval [0, length-1]");
+          "The power of two is out of range! It must be in the interval [0, kTotalBitLen)");
     }
 
 	  return new ID(bitsetAddPwrOf2(id, powerOfTwo));
@@ -356,7 +355,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	 *         the given object, respectively.
 	 */
 	public final int compareTo(ID otherKey) throws ClassCastException {
-	  
+	  assert(id.size() >= kTotalBitLen); // size >= given minimum at creation.
 		if (id.size() != otherKey.id.size()) {
 			throw new ClassCastException(
 					"Only ID objects with same length can be "
@@ -365,7 +364,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 							+ otherKey.id.size() + " bits long.");
 		}
 
-		for (int i = 0; i < id.size(); ++i) {
+		for (int i = 0; i < kTotalBitLen; ++i) {
 		  if (id.get(i) != otherKey.id.get(i))
 		    return id.get(i) ? 1 : -1;
 		}
