@@ -398,6 +398,8 @@ public final class NodeImpl extends Node {
 		// thread retrieving the entries to modify the Set without modifying the
 		// internal Set of entries. sven
 		C4SRetrieveResponse retrieveResponse = new C4SRetrieveResponse(new HashSet<>());
+		retrieveResponse.add(entries.getEntries(msg));
+
 		final int moreResults = msg.amount - retrieveResponse.size();
 		if (moreResults > 0) {
 		  final Node next = references.getSuccessor();

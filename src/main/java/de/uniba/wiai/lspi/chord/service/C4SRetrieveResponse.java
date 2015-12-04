@@ -52,6 +52,8 @@ public class C4SRetrieveResponse implements Serializable {
 		hops += retrieveResponse.hops;
 	}
 	
+	public void add(Set<Service> s) { services.addAll(s); }
+	
 	/**
 	 * Get the number of services this response object contains
 	 * 
