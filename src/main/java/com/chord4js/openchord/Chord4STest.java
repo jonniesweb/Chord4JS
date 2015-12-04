@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.chord4js.ProviderId;
+import com.chord4js.QoSConstraints;
 import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.data.URL;
@@ -56,7 +57,7 @@ public class Chord4STest {
 			
 			// retrieve values for a key
 			log.info("retrieve value by key");
-			C4SMsgRetrieve c4sMsgRetrieve = new C4SMsgRetrieve(providerId, null, 1);
+			C4SMsgRetrieve c4sMsgRetrieve = new C4SMsgRetrieve(providerId, new QoSConstraints(), 1);
 			
 			Set<Service> value = chord.retrieve(c4sMsgRetrieve);
 			log.info("value: " + value);
