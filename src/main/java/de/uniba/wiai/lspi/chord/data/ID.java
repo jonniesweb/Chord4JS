@@ -110,9 +110,9 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
     return b;
 	}
 	
-	private static void partHashSet(final BitSet dst, final int dstOffset, final BitSet src) {
-	  assert(dstOffset + src.size() <= dst.size());
-	  for (int i = dstOffset; i < src.size(); ++i)
+	private static void partHashSet(final BitSet dst, final int dstOffset, final BitSet src, final int srcLen) {
+	  assert(dstOffset + dst.size() <= srcLen);
+	  for (int i = 0; i < Math.min(src.size(), srcLen); ++i)
 	    dst.set(dstOffset + i, src.get(i));
 	}
 	
@@ -130,8 +130,9 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	  final BitSet bs = new BitSet(kTotalBitLen);
 	  final Fn3<Integer, Integer, String, Unit> hashInto =
 	      (Integer offset, Integer bitLen, String s) -> {
-	    if (s != null)
-  	    partHashSet(bs, offset, bitsetResize(hashString(s), bitLen));
+	    if (s != null) {
+	      partHashSet(bs, offset, hashString(s), bitLen);
+	    }
 
 	    return Unit.U;
 	  };
@@ -233,7 +234,8 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	  if (svcId.getProviderPart() == null)
 	    endFillBits.apply(kSemanticTotalBitLen, kProviderBitLen);
 	  
-	  return IdSpan.Inclusive(bgn, new ID(bsEndIncl));
+	  final ID end = new ID(bsEndIncl);
+	  return IdSpan.Inclusive(bgn, end);
 	}
 	
 	public static ID NodeId(final byte[] blob) {
@@ -261,7 +263,7 @@ public final class ID implements Comparable<ID>, Serializable, Cloneable {
 	 */
 	public final String toHexString(int numberOfBytes) {
 
-		// number of displayed bytes must be in interval [1, this.id.size]
+		// number of displayed bytes must be in interval [1, ceil(kTotalBitLen / 8) )
 	  final int    kNumByte  = (kTotalBitLen + 7) / 8; // BitSet size cannot be specified exactly.
 	  final byte[] ary       = new byte[kNumByte];
 	  final int    aryBits   = ary.length * 8;

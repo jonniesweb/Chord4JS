@@ -97,7 +97,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			ServiceId serviceId = serviceFactory.getServiceId();
 			
 			// lookup the result
-			int requiredResults = random.nextInt(expectedServicesInterval + 1);
+			int requiredResults = 1 + random.nextInt(expectedServicesInterval);
 			Set<Service> result = driver.lookup(serviceId, requiredResults);
 			
 			// mark query as a success if we receive enough results, fail
