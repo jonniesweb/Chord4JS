@@ -378,9 +378,9 @@ public final class NodeImpl extends Node {
 	public final C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
 	  if (logger.isEnabledFor(DEBUG)) {
-		this.logger.debug("retrieveEntries: " + msg);
-	}
-	if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
+	    this.logger.debug("retrieveEntries: " + msg);
+	  }
+	  if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
 	  if (msg.span.empty()) return new C4SRetrieveResponse(new HashSet<>());
 	  
 		// Possible, but rare situation: a new node has joined which now is
