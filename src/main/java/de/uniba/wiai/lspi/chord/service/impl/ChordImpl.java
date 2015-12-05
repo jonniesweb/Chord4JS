@@ -803,8 +803,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			  if (response == null) {
 				  continue;
 			  }
-			  
-			  response.incrementHop(pair.snd);
+
 			  return response;
 			} catch (CommunicationException e1) {
 				if (debug) {
