@@ -21,7 +21,7 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 		super();
 	}
 	
-	private static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
+	private final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
 	@Override
 	public void start(int numberOfNodes) {
@@ -71,7 +71,10 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 	}
 	
 	public static void main(String[] args) throws ServiceException {
+		AbstractEvaluation.configure();
 		new RoutingPerformanceEvaluation().evaluate();
+		new RoutingPerformanceEvaluation();
+		
 	}
 	
 }

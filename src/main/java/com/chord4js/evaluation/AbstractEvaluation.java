@@ -15,7 +15,7 @@ import de.uniba.wiai.lspi.util.logging.Logger;
 
 public abstract class AbstractEvaluation {
 	
-	private static final Logger log = Logger.getLogger(AbstractEvaluation.class);
+	private final Logger log = Logger.getLogger(AbstractEvaluation.class);
 	
 	// network sizes for evaluations
 	public static final int NODES_2_7  = 1 <<  7;
@@ -41,7 +41,6 @@ public abstract class AbstractEvaluation {
 	private Set<Chord4SDriver> nodes;
 	
 	public AbstractEvaluation() throws ServiceException {
-		configure();
 		initServices();
 	}
 	
@@ -53,8 +52,11 @@ public abstract class AbstractEvaluation {
 		services = serviceGenerator.getServices(numberOfServices);
 	}
 	
-	protected void configure() {
+	public static void configure() {
 		System.setProperty("chord.properties.file", "config/chord4S.properties");
+		
+		// logging is configured in the chord.properties.file properties file
+//		System.setProperty("log4j.properties.file", "config/log4j.properties");
 		PropertiesLoader.loadPropertyFile();
 	}
 	

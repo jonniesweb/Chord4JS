@@ -88,7 +88,7 @@ final class FixFingerTask implements Runnable {
 		}
 		// June 21st, 2006. Corrected logger name from FixFingerTask.class to
 		// actual version. sven
-		this.logger = Logger.getLogger(FixFingerTask.class.getName() + "."
+		this.logger = Logger.getLogger(FixFingerTask.class.getCanonicalName() + "."
 				+ localID);
 
 		this.parent = parent;

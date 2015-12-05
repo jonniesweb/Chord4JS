@@ -124,7 +124,7 @@ public final class NodeImpl extends Node {
 					"Parameters of the constructor may not have a null value!");
 		}
 
-		this.logger = Logger.getLogger(NodeImpl.class.getName() + "." + nodeID.toString());
+		this.logger = Logger.getLogger(NodeImpl.class.getCanonicalName() + "." + nodeID.toString());
 
 		this.impl = impl;
 		this.asyncExecutor = impl.getAsyncExecutor();

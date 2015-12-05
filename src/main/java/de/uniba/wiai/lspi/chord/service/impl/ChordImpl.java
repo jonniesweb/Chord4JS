@@ -206,7 +206,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	 * Constructor is hidden. Only constructor.
 	 */
 	public ChordImpl() {
-		this.logger = Logger.getLogger(ChordImpl.class.getName()
+		this.logger = Logger.getLogger(ChordImpl.class.getCanonicalName()
 				+ ".unidentified");
 		this.logger.debug("Logger initialized.");
 

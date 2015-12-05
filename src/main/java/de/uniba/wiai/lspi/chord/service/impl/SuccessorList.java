@@ -95,7 +95,7 @@ final class SuccessorList {
 	 */
 	SuccessorList(ID localID, int numberOfEntries, References parent,
 			Entries entries) {
-		this.logger = Logger.getLogger(SuccessorList.class + "." + localID);
+		this.logger = Logger.getLogger(SuccessorList.class.getCanonicalName() + "." + localID);
 		this.logger.debug("Logger initialized.");
 		if (localID == null || parent == null || entries == null) {
 			NullPointerException e = new NullPointerException(

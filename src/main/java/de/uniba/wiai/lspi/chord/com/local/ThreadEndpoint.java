@@ -95,7 +95,7 @@ public final class ThreadEndpoint extends Endpoint {
 	 */
 	public ThreadEndpoint(Node node1, URL url1) {
 		super(node1, url1);
-		this.logger = Logger.getLogger(ThreadEndpoint.class.getName() + "."
+		this.logger = Logger.getLogger(ThreadEndpoint.class.getCanonicalName() + "."
 				+ node1.getNodeID());
 		this.invocationListeners = new LinkedList<InvocationListener>();
 		this.registry = Registry.getRegistryInstance();

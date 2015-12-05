@@ -23,7 +23,7 @@ import de.uniba.wiai.lspi.util.logging.Logger;
  */
 public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	
-	static final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
+	private final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
 	private static final int[] testCrashPercentages = new int[] { 5, 10, 15, 20, 25, 30, 35, 40,
 			45, 50, 55, 60 };
@@ -113,12 +113,9 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 		return queryResults;
 	}
 	
-	public static void main(String[] args) {
-		try {
-			new DataAvailabilityEvaluation().evaluate();
-		} catch (Exception e) {
-			log.error("error occurred during execution", e);
-		}
+	public static void main(String[] args) throws Exception  {
+		AbstractEvaluation.configure();
+		new DataAvailabilityEvaluation().evaluate();
 	}
 	
 	/**

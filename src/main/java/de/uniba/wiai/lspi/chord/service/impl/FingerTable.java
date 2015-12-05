@@ -90,12 +90,13 @@ final class FingerTable {
 							+ "value!");
 		}
 
-		this.logger = Logger.getLogger(FingerTable.class + "." + localID);
+		this.logger = Logger.getLogger(FingerTable.class.getCanonicalName() + "." + localID);
 		this.logger.debug("Logger initialized.");
 
 		this.references = references;
 		this.localID = localID;
 		this.remoteNodes = new Node[localID.getLength()];
+		
 	}
 
 	/**

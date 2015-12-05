@@ -72,7 +72,7 @@ public abstract class Proxy extends Node {
 			throw new IllegalArgumentException("URL must not be null!");
 		}
 		this.nodeURL = url;
-		logger.info("Proxy with url " + url + " initialised.");
+		logger.debug("Proxy with url " + url + " initialised.");
 	}
 
 	/**
