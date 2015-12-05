@@ -54,7 +54,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			// rebuild the network
 			runMaintenanceTasks(aliveNodes, maintenanceRounds);
 			
-			System.out.println("running random queries");
+			log.info("running random queries");
 			// get nodes to query for services with random expected number of
 			// results
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
