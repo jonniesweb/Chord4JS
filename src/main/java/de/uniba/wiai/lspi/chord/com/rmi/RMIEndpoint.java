@@ -38,6 +38,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Pair;
+import com.chord4js.PairS;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -117,11 +119,11 @@ public final class RMIEndpoint extends Endpoint implements RemoteNode {
 		}
 	}
 
-	public RemoteNodeInfo findSuccessor(ID key) throws CommunicationException,
+	public PairS<RemoteNodeInfo, Integer> findSuccessor(ID key) throws CommunicationException,
 			RemoteException {
 		try {
-			Node node = this.node.findSuccessor(key);
-			return createInfo(node);
+			Pair<Node, Integer> node = this.node.findSuccessor(key);
+			return new PairS<>(createInfo(node.fst), node.snd);
 		} catch (ClassCastException e) {
 			throw new RemoteException(
 					"Remote node uses unsuitable communication protocol!", e);

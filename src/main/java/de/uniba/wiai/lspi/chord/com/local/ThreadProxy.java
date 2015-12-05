@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Pair;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -223,22 +224,22 @@ public final class ThreadProxy extends Proxy {
 		return ep;
 	}
 
-	public Node findSuccessor(ID key) throws CommunicationException {
+	public Pair<Node, Integer> findSuccessor(ID key) throws CommunicationException {
 		this.checkValidity();
 		// ThreadEndpoint endpoint = this.registry.lookup(this.nodeName);
 		// if (endpoint == null) {
 		// throw new CommunicationException();
 		// }
-		Node succ = this.endpoint.findSuccessor(key);
+		Pair<Node, Integer> succ = this.endpoint.findSuccessor(key);
 		try {
 			
 			
 			if (debug) {
 				logger.debug("Creating clone of proxy " + succ);
 			}
-			ThreadProxy temp = (ThreadProxy) succ;
+			ThreadProxy temp = (ThreadProxy) succ.fst;
 			logger.debug("Clone created");
-			return temp.cloneMeAt(this.creatorURL);
+			return new Pair<>(temp.cloneMeAt(this.creatorURL), succ.snd);
 		} catch (Throwable t) {
 			logger.debug("Exception during clone of proxy.", t);
 			throw new CommunicationException(t);

@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.chord4js.Pair;
+import com.chord4js.PairS;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -492,7 +494,7 @@ public final class SocketProxy extends Proxy implements Runnable {
 	 * @return The successor of <code>key</code>.
 	 * @throws CommunicationException
 	 */
-	public Node findSuccessor(ID key) throws CommunicationException {
+	public Pair<Node, Integer> findSuccessor(ID key) throws CommunicationException {
 		this.makeSocketAvailable();
 
 		logger.debug("Trying to find successor for ID " + key);
@@ -516,12 +518,12 @@ public final class SocketProxy extends Proxy implements Runnable {
 			throw new CommunicationException(response.getFailureReason());
 		} else {
 			try {
-				RemoteNodeInfo nodeInfo = (RemoteNodeInfo) response.getResult();
-				if (nodeInfo.getNodeURL().equals(this.urlOfLocalNode)) {
-					return Endpoint.getEndpoint(this.urlOfLocalNode).getNode();
+				PairS<RemoteNodeInfo, Integer> nodeInfo = (PairS<RemoteNodeInfo, Integer>)response.getResult();
+				if (nodeInfo.fst.getNodeURL().equals(this.urlOfLocalNode)) {
+					return new Pair<>(Endpoint.getEndpoint(this.urlOfLocalNode).getNode(), nodeInfo.snd);
 				} else {
-					return create(nodeInfo.getNodeURL(), this.urlOfLocalNode,
-							nodeInfo.getNodeID());
+					return new Pair<>(create(nodeInfo.fst.getNodeURL(), this.urlOfLocalNode, nodeInfo.fst.getNodeID())
+					                 ,nodeInfo.snd);
 				}
 			} catch (ClassCastException e) {
 				/*

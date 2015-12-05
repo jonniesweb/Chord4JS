@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.chord4js.Pair;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -607,7 +608,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		// find my successor
 		Node mySuccessor;
 		try {
-			mySuccessor = bootstrapNode.findSuccessor(this.getID());
+			mySuccessor = bootstrapNode.findSuccessor(this.getID()).fst;
 		} catch (CommunicationException e1) {
 			throw new ServiceException("An error occured when trying to find "
 					+ "the successor of this node using bootstrap node "
@@ -754,7 +755,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			// find successor of id
 			Node responsibleNode;
 			// try {
-			responsibleNode = this.findSuccessor(id);
+			responsibleNode = this.findSuccessor(id).fst;
 
 			if (debug) {
 				this.logger.debug("Invoking insertEntry method on node "
@@ -795,15 +796,16 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 		for (;;) {
 			try {
-			  C4SRetrieveResponse response = findSuccessor(msg.span.bgn())
-				            .retrieveEntries(msg);
-			  
+			  final Pair<Node, Integer> pair = findSuccessor(msg.span.bgn());
+			  C4SRetrieveResponse response = pair.fst.retrieveEntries(msg);
+
 			  // equivalent of CommunicationException. Should be faster than throwing exceptions
 			  if (response == null) {
 				  continue;
 			  }
 			  
-			return response;
+			  response.incrementHop(pair.snd);
+			  return response;
 			} catch (CommunicationException e1) {
 				if (debug) {
 					this.logger
@@ -837,8 +839,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			}
 
 			// find successor of id
-			Node responsibleNode;
-			responsibleNode = findSuccessor(id);
+			final Node responsibleNode = findSuccessor(id).fst;
 
 			if (debug) {
 				this.logger.debug("Invoking removeEntry method on node "
@@ -886,7 +887,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	 *             If given ID is <code>null</code>.
 	 * @return Responsible node.
 	 */
-	final Node findSuccessor(ID key) {
+	final Pair<Node, Integer> findSuccessor(ID key) {
 
 		if (key == null) {
 			NullPointerException e = new NullPointerException(
@@ -908,7 +909,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 								+ "successor; return reference on me: "
 								+ this.getID());
 			}
-			return this.localNode;
+			return new Pair<>(localNode, 0);
 		}
 		// check if the key to look up lies between this node and its successor
 		else if (key.isInInterval(this.getID(), successor.getNodeID())
@@ -928,7 +929,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 							+ successor.getNodeID() + " of type "
 							+ successor.getClass());
 				}
-				return successor;
+				return new Pair<>(successor, 0);
 			} catch (Exception e) {
 				// not successful, delete node from successor list and finger
 				// table, and set new successor, if available
@@ -954,7 +955,10 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 									+ closestPrecedingNode.getNodeID()
 									+ " concerning key " + key + " to look up");
 				}
-				return closestPrecedingNode.findSuccessor(key);
+				
+				final Pair<Node, Integer> p = closestPrecedingNode.findSuccessor(key);
+				p.snd += 1;
+				return p;
 			} catch (CommunicationException e) {
 				this.logger
 						.info("Communication failure while requesting successor "

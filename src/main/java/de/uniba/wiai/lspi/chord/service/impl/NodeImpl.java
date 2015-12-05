@@ -38,6 +38,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.chord4js.Pair;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -159,7 +160,7 @@ public final class NodeImpl extends Node {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Node findSuccessor(ID key) {
+	public final Pair<Node, Integer> findSuccessor(ID key) {
 		return this.impl.findSuccessor(key);
 	}
 

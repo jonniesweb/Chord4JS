@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import com.chord4js.Pair;
+import com.chord4js.PairS;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -307,8 +309,11 @@ final class RequestHandler extends Thread implements EndpointStateListener {
 		}
 		switch (methodType) {
 		case MethodConstants.FIND_SUCCESSOR: {
-			Node chordNode = this.node.findSuccessor((ID) parameters[0]);
-			result = new RemoteNodeInfo(chordNode.getNodeURL(), chordNode.getNodeID());
+			Pair<Node, Integer> pair = this.node.findSuccessor((ID) parameters[0]);
+			Node chordNode = pair.fst;
+			result = new PairS<RemoteNodeInfo, Integer>
+			              (new RemoteNodeInfo(chordNode.getNodeURL(), chordNode.getNodeID())
+			              ,pair.snd);
 			break;
 		}
 		case MethodConstants.GET_NODE_ID: {

@@ -31,6 +31,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.PairS;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -53,7 +54,7 @@ public interface RemoteNode extends Remote {
 	 * @throws CommunicationException
 	 * @throws RemoteException
 	 */
-	public RemoteNodeInfo findSuccessor(ID key) throws CommunicationException,
+	public PairS<RemoteNodeInfo, Integer> findSuccessor(ID key) throws CommunicationException,
 			RemoteException;
 
 	/**

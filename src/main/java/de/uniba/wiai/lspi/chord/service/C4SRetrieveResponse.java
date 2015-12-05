@@ -33,9 +33,8 @@ public class C4SRetrieveResponse implements Serializable {
 		this.services = services;
 	}
 	
-	public void incrementHop() {
-		hops++;
-	}
+	public void incrementHop()       { ++hops; }
+	public void incrementHop(int x)  { hops += x; }
 	
 	public int getNumberOfHops() {
 		return hops;

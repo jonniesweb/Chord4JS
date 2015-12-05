@@ -30,6 +30,7 @@ package de.uniba.wiai.lspi.chord.com;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Pair;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -120,7 +121,7 @@ public abstract class Node {
 	 * @throws CommunicationException
 	 *             Thrown if an unresolvable communication failure occurs.
 	 */
-	public abstract Node findSuccessor(ID key) throws CommunicationException;
+	public abstract Pair<Node, Integer> findSuccessor(ID key) throws CommunicationException;
 
 	/**
 	 * Requests this node's predecessor in result[0] and successor list in

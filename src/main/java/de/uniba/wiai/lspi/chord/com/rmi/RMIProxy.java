@@ -33,6 +33,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Pair;
+import com.chord4js.PairS;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -141,11 +143,11 @@ public final class RMIProxy extends Proxy {
 	}
 
 	@Override
-	public Node findSuccessor(ID key) throws CommunicationException {
+	public Pair<Node, Integer> findSuccessor(ID key) throws CommunicationException {
 		this.testConnection();
 		try {
-			RemoteNodeInfo info = this.remoteNode.findSuccessor(key);
-			return new RMIProxy(info, this.localURL);
+			PairS<RemoteNodeInfo, Integer> info = this.remoteNode.findSuccessor(key);
+			return new Pair<>(new RMIProxy(info.fst, this.localURL), info.snd);
 		} catch (RemoteException e) {
 			throw new CommunicationException("Could not connect to "
 					+ this.nodeURL + "!", e);

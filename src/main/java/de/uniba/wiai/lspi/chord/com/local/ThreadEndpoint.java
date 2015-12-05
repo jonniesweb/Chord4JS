@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.chord4js.Pair;
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
 
@@ -145,18 +146,18 @@ public final class ThreadEndpoint extends Endpoint {
 	 * @return The successor of <code>key</code>.
 	 * @throws CommunicationException
 	 */
-	public Node findSuccessor(ID key) throws CommunicationException {
+	public Pair<Node, Integer> findSuccessor(ID key) throws CommunicationException {
 		this.checkIfCrashed();
 		this.waitFor(Endpoint.LISTENING);
 		/* delegate invocation to node. */
 		this.notifyInvocationListeners(InvocationListener.FIND_SUCCESSOR);
-		Node n = this.node.findSuccessor(key);
-		if (n == this.node) {
+		Pair<Node, Integer> n = this.node.findSuccessor(key);
+		if (n.fst == this.node) {
 			this.logger
 					.debug("Returned node is local node. Converting to 'remote' reference. ");
 			ThreadProxy t = new ThreadProxy(this.url, this.url);
-			t.reSetNodeID(n.getNodeID());
-			n = t;
+			t.reSetNodeID(n.fst.getNodeID());
+			n = new Pair<>(t, n.snd);
 		}
 		this
 				.notifyInvocationListenersFinished(InvocationListener.FIND_SUCCESSOR);

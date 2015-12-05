@@ -111,7 +111,7 @@ final class FixFingerTask implements Runnable {
 			ID lookForID = this.localID.addPowerOfTwo(nextFingerToFix);
 			Node newReference;
 			// try {
-			newReference = this.parent.findSuccessor(lookForID);
+			newReference = this.parent.findSuccessor(lookForID).fst;
 
 			// add new reference to finger table, if not yet included
 			if (newReference != null
