@@ -201,6 +201,10 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 
 	private List<Runnable> taskList;
 
+	private boolean debug;
+	
+	private boolean info;
+	
 	/* constructor */
 
 	/**
@@ -219,6 +223,9 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 						"AsynchronousExecution"));
 		this.hashFunction = HashFunction.getHashFunction();
 		logger.info("ChordImpl initialized!");
+		
+		debug = this.logger.isEnabledFor(DEBUG);
+		info = this.logger.isEnabledFor(INFO);
 	}
 
 	/**
@@ -679,7 +686,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 					&& !this.references.containsReference(newReference)) {
 
 				ChordImpl.this.references.addReference(newReference);
-				if (ChordImpl.this.logger.isEnabledFor(DEBUG)) {
+				if (debug) {
 					ChordImpl.this.logger.debug("Added reference on "
 							+ newReference.getNodeID() + " which responded to "
 							+ "ping request");
@@ -739,7 +746,6 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		// determine ID for key
 		final ID id = new ID(svc.getProviderId());
 
-		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
 			this.logger.debug("Inserting new entry with id " + id);
 		}
@@ -783,15 +789,21 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	  if (msg.span.empty() ) return new C4SRetrieveResponse(values);
 
 		// determine ID span for the service id (wildcarded)
-		boolean debug = this.logger.isEnabledFor(DEBUG);
 		if (debug) {
 			this.logger.debug("Retrieving entries with id " + msg.span);
 		}
 
 		for (;;) {
 			try {
-			  return findSuccessor(msg.span.bgn())
-			            .retrieveEntries(msg);
+			  C4SRetrieveResponse response = findSuccessor(msg.span.bgn())
+				            .retrieveEntries(msg);
+			  
+			  // equivalent of CommunicationException. Should be faster than throwing exceptions
+			  if (response == null) {
+				  continue;
+			  }
+			  
+			return response;
 			} catch (CommunicationException e1) {
 				if (debug) {
 					this.logger
@@ -820,7 +832,6 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		boolean removed = false;
 		while (!removed) {
 
-			boolean debug = this.logger.isEnabledFor(DEBUG);
 			if (debug) {
 				this.logger.debug("Removing entry with id " + id);
 			}
@@ -884,13 +895,13 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			throw e;
 		}
 
-		boolean debug = this.logger.isEnabledFor(DEBUG);
+		
 
 		// check if the local node is the only node in the network
 		Node successor = this.references.getSuccessor();
 		if (successor == null) {
 
-			if (this.logger.isEnabledFor(INFO)) {
+			if (info) {
 				this.logger
 						.info("I appear to be the only node in the network, so I am "
 								+ "my own "
@@ -946,7 +957,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 				return closestPrecedingNode.findSuccessor(key);
 			} catch (CommunicationException e) {
 				this.logger
-						.error("Communication failure while requesting successor "
+						.info("Communication failure while requesting successor "
 								+ "for key "
 								+ key
 								+ " from node "

@@ -32,34 +32,22 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	 * Expect between 1 and this (inclusive) to be the number of services to
 	 * find when querying the network.
 	 */
-	private static final int expectedServicesInterval = 20;
-	private int crashPercent = 0;
+	private static final int expectedServicesInterval = 25;
+	
 	public DataAvailabilityEvaluation() throws Exception {
 		
-	}
-	
-	public void evaluate() {
-	  // iterate over all crash percentages outside since we need to tear down the network after each %
-	  for (int x : testCrashPercentages) {
-	    crashPercent = x;
-	    super.evaluate();
-	  }
 	}
 	
 	@Override
 	public void start(int numberOfNodes, int maintenanceRounds) {
 		
-		
-	  {
+		for (int crashPercent : testCrashPercentages) {
 			EvaluationController controller = new EvaluationControllerImpl(random);
 			
-			log.info("creating nodes");
 			createNetwork(numberOfNodes, controller, maintenanceRounds);
 			
-			log.info("inserting services on nodes");
 			putServicesOnNodes(getNodes());
 			
-			log.info("crashing nodes");
 			// crash a percentage of the nodes according to crashPercentage
 			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(), crashPercent);
 			
@@ -74,6 +62,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			// display the results of the test
 			log.info("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercent
 					+ " results: " + results);
+			
+			cleanupNodes();
 			
 		}
 	}
@@ -105,7 +95,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			ServiceId serviceId = serviceFactory.getServiceId();
 			
 			// lookup the result
-			int requiredResults = 1 + random.nextInt(expectedServicesInterval);
+//			int requiredResults = 1 + random.nextInt(expectedServicesInterval);
+			int requiredResults = expectedServicesInterval;
 			Set<Service> result = driver.lookup(serviceId, requiredResults);
 			
 			// mark query as a success if we receive enough results, fail

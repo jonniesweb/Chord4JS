@@ -41,9 +41,10 @@ public class EvaluationControllerImpl implements EvaluationController {
 		// create the chord network
 		chord.create(bootstrapURL);
 		
+		log.info("creating " + numberOfNodes + " nodes");
 		// create the other nodes and join them to the network
 		for (int i = 0; i < numberOfNodes - 1; i++) {
-			log.info("create node " + i);
+			log.debug("create node " + i);
 			Chord4SDriver node = addNewNode();
 			nodes.add(node);
 		}
@@ -73,7 +74,9 @@ public class EvaluationControllerImpl implements EvaluationController {
 		int size = chord4sDrivers.size();
 		
 		// calculate # of nodes to crash
-		size = size * (percentage / 100);
+		size = (int) (size * (percentage / 100.0));
+		
+		log.info("crashing " + size + " nodes");
 		
 		// create a list of the nodes for iterating over
 		ArrayList<Chord4SDriver> nodes = new ArrayList<>(chord4sDrivers);

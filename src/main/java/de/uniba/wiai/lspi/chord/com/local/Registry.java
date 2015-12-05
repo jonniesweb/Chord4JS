@@ -35,6 +35,7 @@ import java.util.Map;
 
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.util.logging.Logger;
+import de.uniba.wiai.lspi.util.logging.Logger.LogLevel;
 
 /**
  * This class represents a registry for {@link ThreadEndpoint endpoints}that
@@ -135,13 +136,19 @@ public final class Registry {
 	 */
 	public void bind(ThreadEndpoint endpoint) {
 		URL name = endpoint.getURL();
-		logger.debug("Binding endpoint: " + endpoint + "with name " + name);
+		
+		boolean debug = logger.isEnabledFor(LogLevel.DEBUG);
+		if (debug) {
+			logger.debug("Binding endpoint: " + endpoint + "with name " + name);
+		}
 		/* if there is not already an endpoint for that name */
 		Object temp = this.registeredEndpoints.get(name);
 		if (temp == null) {
 			/* bind given endpoint to name */
 			this.registeredEndpoints.put(name, endpoint);
-			logger.debug("Endpoint " + endpoint + " bound.");
+			if (debug) {
+				logger.debug("Endpoint " + endpoint + " bound.");
+			}
 		} else {
 			logger.warn("Endpoint " + endpoint + " NOT BOUND!!! " + temp
 					+ " already registered under " + name);
@@ -155,9 +162,15 @@ public final class Registry {
 	 *            {@link ThreadEndpoint}to remove.
 	 */
 	public void unbind(ThreadEndpoint endpoint) {
-		logger.debug("Unbinding endpoint: " + endpoint);
+		boolean debug = logger.isEnabledFor(LogLevel.DEBUG);
+		
+		if (debug) {
+			logger.debug("Unbinding endpoint: " + endpoint);
+		}
 		this.registeredEndpoints.remove(endpoint.getURL());
-		logger.debug("Endpoint " + endpoint + " removed from registry.");
+		if (debug) {
+			logger.debug("Endpoint " + endpoint + " removed from registry.");
+		}
 	}
 
 	/**
@@ -176,7 +189,9 @@ public final class Registry {
 	public ThreadEndpoint lookup(URL url) {
 		logger.debug("Looking up endpoint for " + url);
 		ThreadEndpoint ep = this.registeredEndpoints.get(url);
-		logger.debug("Endpoint for " + url + ": " + ep);
+		if (logger.isEnabledFor(LogLevel.DEBUG)) {
+			logger.debug("Endpoint for " + url + ": " + ep);
+		}
 		return ep;
 	}
 

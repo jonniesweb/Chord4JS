@@ -44,6 +44,7 @@ import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
 import de.uniba.wiai.lspi.util.logging.Logger;
+import de.uniba.wiai.lspi.util.logging.Logger.LogLevel;
 
 /**
  * This class represents a {@link Proxy} for the protocol that allows 
@@ -84,6 +85,8 @@ public final class ThreadProxy extends Proxy {
 	 * The endpoint, to which this delegates method invocations. 
 	 */
 	private ThreadEndpoint endpoint = null;
+	
+	private boolean debug;
 
 	/**
 	 * 
@@ -96,6 +99,7 @@ public final class ThreadProxy extends Proxy {
 		this.registry = Registry.getRegistryInstance();
 		this.nodeID = nodeID1;
 		this.creatorURL = creatorURL1;
+		debug = logger.isEnabledFor(LogLevel.DEBUG);
 	}
 
 	/**
@@ -119,6 +123,8 @@ public final class ThreadProxy extends Proxy {
 			throw new CommunicationException();
 		}
 		this.nodeID = endpoint_.getNodeID();
+		
+		debug = logger.isEnabledFor(LogLevel.DEBUG);
 	}
 	
 	void reSetNodeID(ID id){
@@ -153,6 +159,32 @@ public final class ThreadProxy extends Proxy {
 			Registry.getRegistryInstance().addProxyUsedBy(
 					this.creatorURL, this);
 		}
+	}
+	
+	private boolean checkValidityBool() {
+		if (!this.isValid) {
+			return false;
+		}
+
+		if (this.endpoint == null) {
+			this.endpoint = this.registry.lookup(this.nodeURL);
+			if (this.endpoint == null) {
+				return false;
+			}
+		}
+
+		/*
+		 * Ensure that node id is set, if has not been set before.
+		 */
+		this.getNodeID();
+
+		if (!this.hasBeenUsed) {
+			this.hasBeenUsed = true;
+			Registry.getRegistryInstance().addProxyUsedBy(
+					this.creatorURL, this);
+		}
+		
+		return true;
 	}
 
 	/**
@@ -199,7 +231,11 @@ public final class ThreadProxy extends Proxy {
 		// }
 		Node succ = this.endpoint.findSuccessor(key);
 		try {
-			logger.debug("Creating clone of proxy " + succ);
+			
+			
+			if (debug) {
+				logger.debug("Creating clone of proxy " + succ);
+			}
 			ThreadProxy temp = (ThreadProxy) succ;
 			logger.debug("Clone created");
 			return temp.cloneMeAt(this.creatorURL);
@@ -274,9 +310,14 @@ public final class ThreadProxy extends Proxy {
 	}
 
 	public C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve id) throws CommunicationException {
-		this.checkValidity();
-		logger.debug("Trying to execute retrieve().");
-		logger.debug("Found endpoint " + this.endpoint);
+		if (!checkValidityBool()) {
+			return null;
+		}
+		
+		if (logger.isEnabledFor(LogLevel.DEBUG)) {
+			logger.debug("Trying to execute retrieve().");
+			logger.debug("Found endpoint " + this.endpoint);
+		}
 		return this.endpoint.retrieveEntries(id);
 	}
 

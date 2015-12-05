@@ -19,8 +19,8 @@ public abstract class AbstractEvaluation {
 	
 	// network sizes for evaluations
 	public static final int NODES_2_7  = 1 <<  7;
+	public static final int NODES_2_9 = 1 << 9;
 	public static final int NODES_2_11 = 1 << 11;
-	public static final int NODES_2_15 = 1 << 15;
 	
 	/**
 	 * Number of services to generate for inserting into the network
@@ -81,14 +81,16 @@ public abstract class AbstractEvaluation {
 		start(NODES_2_7, 50);
 		cleanupNodes();
 		
-//		start(NODES_2_11);
-//		cleanupNodes();
+		start(NODES_2_9, 100);
+		cleanupNodes();
 		
-//		start(NODES_2_15);
-//		cleanupNodes();
+		start(NODES_2_11, 100);
+		cleanupNodes();
+		
 	}
 	
 	protected void putServicesOnNodes(Set<Chord4SDriver> nodes) {
+		log.info("inserting services on nodes");
 		// for each service, call put on a random node
 		ArrayList<Chord4SDriver> nodesList = new ArrayList<Chord4SDriver>(nodes);
 		for (Service service : services) {
@@ -134,13 +136,16 @@ public abstract class AbstractEvaluation {
 	 * Run the maintenance task a few times for the given nodes
 	 */
 	protected void runMaintenanceTasks(Set<Chord4SDriver> nodes, int rounds) {
+		log.info("running maintenance tasks");
 		// run the maintenance tasks a few times
 		for (int i = 0; i < rounds; i++) {
-			log.info("running maintenance tasks " + i);
+			log.debug("running maintenance tasks " + i);
 			for (Chord4SDriver driver : nodes) {
 				driver.runTasks();
 			}
 		}
+		
+		log.info("finished maintenance tasks");
 	}
 	
 	public Set<Chord4SDriver> getNodes() {

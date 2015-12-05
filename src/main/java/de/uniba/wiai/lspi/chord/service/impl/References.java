@@ -114,7 +114,7 @@ final class References {
 							+ numberOfEntriesInSuccessorList
 							+ " is not a valid value!");
 
-		this.logger = Logger.getLogger(References.class.getName() + "."
+		this.logger = Logger.getLogger(References.class.getCanonicalName() + "."
 				+ locID);
 
 		this.logger.debug("Logger initialized.");
@@ -499,7 +499,7 @@ final class References {
 								.getNodeID(), new HashSet<>());
 					} catch (CommunicationException e) {
 						logger
-								.warn(
+								.info(
 										"Could not remove replicas on last predecessor",
 										e);
 					}

@@ -388,7 +388,7 @@ public final class NodeImpl extends Node {
 				&& !msg.span.bgn().isInInterval(references.getPredecessor().getNodeID()
 				                               ,nodeID)) {
 			this.logger
-					.fatal("Network needs more time to update their predecessors and finger tables. "
+					.warn("Network needs more time to update their predecessors and finger tables, or some nodes have crashed. "
 							+ "If this occurs when evaluating, increase the number of rounds that "
 							+ "the maintenance tasks run for after network creation. "
 							+ "The rare situation has occured at time "
