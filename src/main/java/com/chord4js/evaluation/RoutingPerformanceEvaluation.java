@@ -24,10 +24,10 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 	private final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
 	
 	@Override
-	public void start(int numberOfNodes) {
+	public void start(int numberOfNodes, int maintenanceRounds) {
 		EvaluationControllerImpl controller = new EvaluationControllerImpl(random);
 		
-		createNetwork(numberOfNodes, controller);
+		createNetwork(numberOfNodes, controller, maintenanceRounds);
 		
 		// add services to nodes
 		putServicesOnNodes(getNodes());
@@ -35,7 +35,7 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 		// iterate over all expected results sizes, querying the nodes
 		for (int expected : expectedResults) {
 			double averageHops = queryNodesAndComputeAverage(getNodes(), expected);
-			log.info("number of nodes: " + numberOfNodes + " expected number of results: "
+			log.info("number of nodes: " + numberOfNodes + " services to get: "
 					+ expected + " average hops: " + averageHops);
 		}
 		

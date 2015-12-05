@@ -11,6 +11,7 @@ import com.chord4js.Service;
 
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
+import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.PropertiesLoader;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
@@ -97,7 +98,7 @@ public class Chord4STest {
 	 */
 	private void addNewNode() throws Exception {
 		
-		ChordImpl chord = new ChordImpl();
+		Chord chord = new ChordImpl();
 		chord.join(getNextURL(), bootstrapURL);
 		
 	}

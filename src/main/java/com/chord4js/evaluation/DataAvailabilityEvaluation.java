@@ -32,7 +32,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	 * Expect between 1 and this (inclusive) to be the number of services to
 	 * find when querying the network.
 	 */
-	private static final int expectedServicesInterval = 5;
+	private static final int expectedServicesInterval = 20;
 	private int crashPercent = 0;
 	public DataAvailabilityEvaluation() throws Exception {
 		
@@ -46,19 +46,27 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	  }
 	}
 	
-	public void start(int numberOfNodes) {
+	@Override
+	public void start(int numberOfNodes, int maintenanceRounds) {
 		
 		
 	  {
 			EvaluationController controller = new EvaluationControllerImpl(random);
 			
-			createNetwork(numberOfNodes, controller);
+			log.info("creating nodes");
+			createNetwork(numberOfNodes, controller, maintenanceRounds);
 			
+			log.info("inserting services on nodes");
 			putServicesOnNodes(getNodes());
 			
+			log.info("crashing nodes");
 			// crash a percentage of the nodes according to crashPercentage
 			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(), crashPercent);
 			
+			// rebuild the network
+			runMaintenanceTasks(aliveNodes, maintenanceRounds);
+			
+			System.out.println("running random queries");
 			// get nodes to query for services with random expected number of
 			// results
 			AggregateQueryResults results = runRandomQueries(aliveNodes);
@@ -125,6 +133,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 		
 		private AtomicInteger successfulQuery = new AtomicInteger();
 		private AtomicInteger failedQuery = new AtomicInteger();
+		private long startTime = System.currentTimeMillis();
 		
 		/**
 		 * Mark that a query successfully completed.
@@ -154,7 +163,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 		
 		@Override
 		public String toString() {
-			return "results: " + " successful: " + successfulQuery + " failed: " + failedQuery;
+			return "results: " + " successful: " + successfulQuery + " failed: " + failedQuery + " time taken: " + (System.currentTimeMillis() - startTime);
 		}
 	}
 }

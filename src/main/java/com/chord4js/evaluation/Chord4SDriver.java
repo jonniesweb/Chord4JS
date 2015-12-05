@@ -79,4 +79,9 @@ public interface Chord4SDriver {
 	 */
 	void crash();
 	
+	/**
+	 * Run maintenance tasks manually.
+	 */
+	void runTasks();
+	
 }

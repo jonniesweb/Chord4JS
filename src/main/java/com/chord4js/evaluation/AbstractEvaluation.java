@@ -25,7 +25,7 @@ public abstract class AbstractEvaluation {
 	/**
 	 * Number of services to generate for inserting into the network
 	 */
-	private static final int numberOfServices = 10000;
+	private static final int numberOfServices = 500;
 	
 	protected Random random = new Random();
 	
@@ -64,9 +64,13 @@ public abstract class AbstractEvaluation {
 	 * Run the evaluation with the given number of nodes. Overridden by
 	 * subclasses of {@link AbstractEvaluation}.
 	 * 
+	 * Specify the number of maintenance rounds to run after network creation to
+	 * update the finger table and find the predecessors.
+	 * 
 	 * @param numberOfNodes
+	 * @param maintenanceRounds
 	 */
-	public abstract void start(int numberOfNodes);
+	public abstract void start(int numberOfNodes, int maintenanceRounds);
 	
 	/**
 	 * Run the evaluation with differing sizes of networks. Calls
@@ -74,14 +78,14 @@ public abstract class AbstractEvaluation {
 	 */
 	public void evaluate() {
 		
-		start(NODES_2_7);
+		start(NODES_2_7, 50);
 		cleanupNodes();
 		
-		start(NODES_2_11);
-		cleanupNodes();
+//		start(NODES_2_11);
+//		cleanupNodes();
 		
-		start(NODES_2_15);
-		cleanupNodes();
+//		start(NODES_2_15);
+//		cleanupNodes();
 	}
 	
 	protected void putServicesOnNodes(Set<Chord4SDriver> nodes) {
@@ -112,14 +116,31 @@ public abstract class AbstractEvaluation {
 	 * @param controller
 	 * @return
 	 */
-	protected Set<Chord4SDriver> createNetwork(int numberOfNodes, EvaluationController controller) {
+	protected Set<Chord4SDriver> createNetwork(int numberOfNodes, EvaluationController controller, int rounds) {
 		try {
 			setNodes(controller.createChord4SNetwork(numberOfNodes));
 		} catch (ServiceException e) {
 			log.fatal("unable to create the network", e);
 			return null;
 		}
+		
+		runMaintenanceTasks(nodes, rounds);
+		
+		
 		return getNodes();
+	}
+
+	/**
+	 * Run the maintenance task a few times for the given nodes
+	 */
+	protected void runMaintenanceTasks(Set<Chord4SDriver> nodes, int rounds) {
+		// run the maintenance tasks a few times
+		for (int i = 0; i < rounds; i++) {
+			log.info("running maintenance tasks " + i);
+			for (Chord4SDriver driver : nodes) {
+				driver.runTasks();
+			}
+		}
 	}
 	
 	public Set<Chord4SDriver> getNodes() {

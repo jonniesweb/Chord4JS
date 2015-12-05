@@ -45,7 +45,7 @@ import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.C4SMsgRetrieve;
 import de.uniba.wiai.lspi.chord.service.C4SRetrieveResponse;
-import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
+import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 /**
@@ -406,31 +406,37 @@ public final class ThreadEndpoint extends Endpoint {
 		this.setState(CRASHED);
 		this.notifyWaitingThreads();
 		/* kill threads of node (gefrickelt) */
-		ChordImpl impl = ChordImplAccess.fetchChordImplOfNode(this.node);
-		Field[] fields = impl.getClass().getDeclaredFields();
-		this.logger.debug(fields.length + " fields obtained from class "
-				+ impl.getClass());
-		for (Field field : fields) {
-			this.logger.debug("Examining field " + field + " of node "
-					+ this.node);
-			try {
-				if (field.getName().equals("maintenanceTasks")) {
-					field.setAccessible(true);
-
-					Object executor = field.get(impl);
-					this.logger.debug("Shutting down TaskExecutor " + executor
-							+ ".");
-					Method m = executor.getClass().getMethod("shutdown",
-							new Class[0]);
-					m.setAccessible(true);
-					m.invoke(executor, new Object[0]);
+		Chord impl = ChordImplAccess.fetchChordImplOfNode(this.node);
+		
+		if (!impl.isMaintenanceTasksDisabled()) {
+			
+			Field[] fields = impl.getClass().getDeclaredFields();
+			this.logger.debug(fields.length + " fields obtained from class "
+					+ impl.getClass());
+			for (Field field : fields) {
+				this.logger.debug("Examining field " + field + " of node "
+						+ this.node);
+				try {
+					if (field.getName().equals("maintenanceTasks")) {
+						field.setAccessible(true);
+						
+						
+						Object executor = field.get(impl);
+						this.logger.debug("Shutting down TaskExecutor " + executor
+								+ ".");
+						Method m = executor.getClass().getMethod("shutdown",
+								new Class[0]);
+						m.setAccessible(true);
+						m.invoke(executor, new Object[0]);
+					}
+				} catch (Throwable t) {
+					this.logger.warn("Could not kill threads of node " + this.node,
+							t);
+					t.printStackTrace();
 				}
-			} catch (Throwable t) {
-				this.logger.warn("Could not kill threads of node " + this.node,
-						t);
-				t.printStackTrace();
 			}
 		}
+		
 		Endpoint.endpoints.remove(this.url);
 		this.invocationListeners = null;
 	}

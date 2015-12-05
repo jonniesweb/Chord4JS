@@ -30,6 +30,7 @@ package de.uniba.wiai.lspi.chord.com.local;
 import java.lang.reflect.Field;
 
 import de.uniba.wiai.lspi.chord.com.Node;
+import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 import de.uniba.wiai.lspi.chord.service.impl.NodeImpl;
 
@@ -56,7 +57,7 @@ public class ChordImplAccess {
 	 * @return Reference to an instance of {@link ChordImpl}.
 	 */
 	@SuppressWarnings("null")
-	public static ChordImpl fetchChordImplOfNode(Node n) {
+	public static Chord fetchChordImplOfNode(Node n) {
 		NodeImpl node = null;
 		try {
 			node = (NodeImpl) n;
@@ -72,9 +73,9 @@ public class ChordImplAccess {
 			handleException(e); 
 		}
 		chordImplField.setAccessible(true);
-		ChordImpl impl = null;
+		Chord impl = null;
 		try {
-			impl = (ChordImpl) chordImplField.get(node);
+			impl = (Chord) chordImplField.get(node);
 		} catch (IllegalArgumentException e) {
 			handleException(e); 
 		} catch (IllegalAccessException e) {

@@ -376,8 +376,10 @@ public final class NodeImpl extends Node {
 	@Override
 	public final C4SRetrieveResponse retrieveEntries(C4SMsgRetrieve msg)
 			throws CommunicationException {
-	  this.logger.debug("retrieveEntries: " + msg);
-	  if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
+	  if (logger.isEnabledFor(DEBUG)) {
+		this.logger.debug("retrieveEntries: " + msg);
+	}
+	if (msg.amount <= 0 ) return new C4SRetrieveResponse(new HashSet<>());
 	  if (msg.span.empty()) return new C4SRetrieveResponse(new HashSet<>());
 	  
 		// Possible, but rare situation: a new node has joined which now is
@@ -385,10 +387,17 @@ public final class NodeImpl extends Node {
 		if (this.references.getPredecessor() != null
 				&& !msg.span.bgn().isInInterval(references.getPredecessor().getNodeID()
 				                               ,nodeID)) {
-			this.logger.fatal("The rare situation has occured at time "
-					+ System.currentTimeMillis() + ", id to look up=" + msg.span
-					+ ", id of local node=" + this.nodeID
-					+ ", id of predecessor="
+			this.logger
+					.fatal("Network needs more time to update their predecessors and finger tables. "
+							+ "If this occurs when evaluating, increase the number of rounds that "
+							+ "the maintenance tasks run for after network creation. "
+							+ "The rare situation has occured at time "
+							+ System.currentTimeMillis()
+							+ ", id to look up="
+							+ msg.span
+							+ ", id of local node="
+							+ this.nodeID
+							+ ", id of predecessor="
 					+ this.references.getPredecessor().getNodeID());
 			return this.references.getPredecessor().retrieveEntries(msg);
 		}
@@ -399,6 +408,7 @@ public final class NodeImpl extends Node {
 		// internal Set of entries. sven
 		C4SRetrieveResponse retrieveResponse = new C4SRetrieveResponse(new HashSet<>());
 		retrieveResponse.add(entries.getEntries(msg));
+		retrieveResponse.incrementHop();
 
 		final int moreResults = msg.amount - retrieveResponse.size();
 		if (moreResults > 0) {
@@ -410,6 +420,7 @@ public final class NodeImpl extends Node {
 		      this.logger.debug("asking node " + nextId + " for " + msg2);
 		      // Add results from futher down the segment
 		      retrieveResponse.add(next.retrieveEntries(msg2));
+		      retrieveResponse.incrementHop();
 		    }
 		  }
 		}

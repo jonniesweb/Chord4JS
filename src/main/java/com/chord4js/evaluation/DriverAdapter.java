@@ -63,5 +63,10 @@ public class DriverAdapter implements Chord4SDriver {
 	public void crash() {
 		chordImpl.crash();
 	}
+
+	@Override
+	public void runTasks() {
+		chordImpl.runTasks();
+	}
 	
 }

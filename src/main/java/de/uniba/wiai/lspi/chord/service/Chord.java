@@ -267,4 +267,8 @@ public interface Chord {
 	public abstract void remove(ProviderId svcId)
 			throws ServiceException;
 
+	public abstract void runTasks();
+
+	public abstract boolean isMaintenanceTasksDisabled();
+
 }

@@ -31,6 +31,7 @@ import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import com.chord4js.ProviderId;
 import com.chord4js.Service;
@@ -199,6 +199,8 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	 */
 	private ID localID;
 
+	private List<Runnable> taskList;
+
 	/* constructor */
 
 	/**
@@ -210,8 +212,8 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 				+ ".unidentified");
 		this.logger.debug("Logger initialized.");
 
-		this.maintenanceTasks = new ScheduledThreadPoolExecutor(3,
-				new ChordThreadFactory("MaintenanceTaskExecution"));
+//		this.maintenanceTasks = new ScheduledThreadPoolExecutor(3,
+//				new ChordThreadFactory("MaintenanceTaskExecution"));
 		this.asyncExecutor = Executors.newFixedThreadPool(
 				ChordImpl.ASYNC_CALL_THREADS, new ChordThreadFactory(
 						"AsynchronousExecution"));
@@ -402,23 +404,61 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	 */
 	private final void createTasks() {
 
-		// start thread which periodically stabilizes with successor
-		this.maintenanceTasks.scheduleWithFixedDelay(new StabilizeTask(
-				this.localNode, this.references, this.entries),
-				ChordImpl.STABILIZE_TASK_START,
-				ChordImpl.STABILIZE_TASK_INTERVAL, TimeUnit.SECONDS);
-
-		// start thread which periodically attempts to fix finger table
-		this.maintenanceTasks.scheduleWithFixedDelay(new FixFingerTask(
-				this.localNode, this.getID(), this.references),
-				ChordImpl.FIX_FINGER_TASK_START,
-				ChordImpl.FIX_FINGER_TASK_INTERVAL, TimeUnit.SECONDS);
-
-		// start thread which periodically checks whether predecessor has
-		// failed
-		this.maintenanceTasks.scheduleWithFixedDelay(new CheckPredecessorTask(
-				this.references), ChordImpl.CHECK_PREDECESSOR_TASK_START,
-				ChordImpl.CHECK_PREDECESSOR_TASK_INTERVAL, TimeUnit.SECONDS);
+		/**
+		 * Disable creating these tasks since it spawns way too many threads
+		 * when running locally.
+		 */
+		
+//		// start thread which periodically stabilizes with successor
+//		this.maintenanceTasks.scheduleWithFixedDelay(new StabilizeTask(
+//				this.localNode, this.references, this.entries),
+//				ChordImpl.STABILIZE_TASK_START,
+//				ChordImpl.STABILIZE_TASK_INTERVAL, TimeUnit.SECONDS);
+//
+//		// start thread which periodically attempts to fix finger table
+//		this.maintenanceTasks.scheduleWithFixedDelay(new FixFingerTask(
+//				this.localNode, this.getID(), this.references),
+//				ChordImpl.FIX_FINGER_TASK_START,
+//				ChordImpl.FIX_FINGER_TASK_INTERVAL, TimeUnit.SECONDS);
+//
+//		// start thread which periodically checks whether predecessor has
+//		// failed
+//		this.maintenanceTasks.scheduleWithFixedDelay(new CheckPredecessorTask(
+//				this.references), ChordImpl.CHECK_PREDECESSOR_TASK_START,
+//				ChordImpl.CHECK_PREDECESSOR_TASK_INTERVAL, TimeUnit.SECONDS);
+		
+		
+		/**
+		 * Instead, we will create the tasks and allow them to be run manually
+		 */
+		
+		// create tasks
+		StabilizeTask stabilizeTask = new StabilizeTask(localNode, references, entries);
+		FixFingerTask fixFingerTask = new FixFingerTask(localNode, getID(), references);
+		CheckPredecessorTask checkPredecessorTask = new CheckPredecessorTask(references);
+		
+		// add them to list
+		List<Runnable> taskList = new ArrayList<Runnable>();
+		taskList.add(stabilizeTask);
+		taskList.add(fixFingerTask);
+		taskList.add(checkPredecessorTask);
+		
+		// set to field
+		this.taskList = taskList;
+		
+		// run maintenance tasks right now
+		runTasks();
+		
+	}
+	
+	/**
+	 * Run the maintenance tasks manually
+	 */
+	@Override
+	public void runTasks() {
+		for (Runnable runnable : taskList) {
+			runnable.run();
+		}
 	}
 
 	public final void join(URL bootstrapURL) throws ServiceException {
@@ -666,7 +706,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 			return;
 		}
 
-		this.maintenanceTasks.shutdownNow();
+//		this.maintenanceTasks.shutdownNow();
 
 		try {
 			Node successor = this.references.getSuccessor();
@@ -1016,6 +1056,12 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	 */
 	public void crash() {
 		localNode.crash();
+		asyncExecutor.shutdownNow();
 		
+	}
+	
+	@Override
+	public boolean isMaintenanceTasksDisabled() {
+		return maintenanceTasks == null;
 	}
 }
