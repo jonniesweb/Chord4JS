@@ -400,7 +400,9 @@ public final class NodeImpl extends Node {
 							+ this.nodeID
 							+ ", id of predecessor="
 					+ this.references.getPredecessor().getNodeID());
-			return this.references.getPredecessor().retrieveEntries(msg);
+			final C4SRetrieveResponse x = this.references.getPredecessor().retrieveEntries(msg);
+			x.incrementHop(); // because we had to redirect to x
+			return x;
 		}
 
 		// return entries from local repository
@@ -409,7 +411,6 @@ public final class NodeImpl extends Node {
 		// internal Set of entries. sven
 		C4SRetrieveResponse retrieveResponse = new C4SRetrieveResponse(new HashSet<>());
 		retrieveResponse.add(entries.getEntries(msg));
-		retrieveResponse.incrementHop();
 
 		final int moreResults = msg.amount - retrieveResponse.size();
 		if (moreResults > 0) {
@@ -419,9 +420,11 @@ public final class NodeImpl extends Node {
 		    if (msg.span.contains(nextId)) {
 		      final C4SMsgRetrieve msg2 = msg.Subset(next.getNodeID(), moreResults);
 		      this.logger.debug("asking node " + nextId + " for " + msg2);
+		      final C4SRetrieveResponse responseNext = next.retrieveEntries(msg2);
 		      // Add results from futher down the segment
-		      retrieveResponse.add(next.retrieveEntries(msg2));
-		      retrieveResponse.incrementHop();
+		      retrieveResponse.add(responseNext.services);
+		      // + whatever it had to go touch + 1 for having to touch next
+		      retrieveResponse.incrementHop(responseNext.getNumberOfHops() + 1);
 		    }
 		  }
 		}
