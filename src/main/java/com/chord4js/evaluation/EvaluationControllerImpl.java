@@ -53,7 +53,8 @@ public class EvaluationControllerImpl implements EvaluationController {
 	}
 	
 	/**
-	 * Add a new node to the network of the {@link #bootstrapURL}
+	 * Add a new node to the network of the {@link #bootstrapURL}. Updates
+	 * {@link #bootstrapURL} with the node that was just created.
 	 * 
 	 * @throws ServiceException
 	 * 
@@ -62,7 +63,10 @@ public class EvaluationControllerImpl implements EvaluationController {
 	private Chord4SDriver addNewNode() throws ServiceException {
 		
 		ChordImpl chord = new ChordImpl();
-		chord.join(getNextURL(), bootstrapURL);
+		URL nextURL = getNextURL();
+		log.debug("new node joining network - bootstrap: " + bootstrapURL + " node URL: " + nextURL);
+		chord.join(nextURL, bootstrapURL);
+		bootstrapURL = chord.getURL();
 		
 		return new DriverAdapter(chord);
 	}

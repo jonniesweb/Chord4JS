@@ -27,7 +27,10 @@ public abstract class AbstractEvaluation {
 	 */
 	private static final int numberOfServices = 500;
 	
-	protected Random random = new Random();
+	/**
+	 * Start with a seed to get the same results every time
+	 */
+	protected Random random = new Random(123456);
 	
 	/**
 	 * ServiceIds that can be queried for in the network
