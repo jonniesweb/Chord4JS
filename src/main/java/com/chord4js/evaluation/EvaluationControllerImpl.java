@@ -72,22 +72,16 @@ public class EvaluationControllerImpl implements EvaluationController {
 	}
 	
 	@Override
-	public Set<Chord4SDriver> crashPercentageOfNodes(Set<Chord4SDriver> chord4sDrivers,
-			int percentage) {
+	public Set<Chord4SDriver> crashNodes(Set<Chord4SDriver> chord4sDrivers, int numberOfNodes) {
 		
-		int size = chord4sDrivers.size();
-		
-		// calculate # of nodes to crash
-		size = (int) (size * (percentage / 100.0));
-		
-		log.info("crashing " + size + " nodes");
+		log.info("crashing " + numberOfNodes + " nodes");
 		
 		// create a list of the nodes for iterating over
 		ArrayList<Chord4SDriver> nodes = new ArrayList<>(chord4sDrivers);
 		
 		// randomly get a node from the list and crash it, then remove it from
 		// the list
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < numberOfNodes; i++) {
 			int randomNode = random.nextInt(nodes.size());
 			Chord4SDriver driver = nodes.get(randomNode);
 			driver.crash();

@@ -25,14 +25,13 @@ public interface EvaluationController {
 	Set<Chord4SDriver> createChord4SNetwork(int numberOfNodes) throws ServiceException;
 	
 	/**
-	 * Crash a percentage of the nodes
+	 * Immediately crash a number of nodes, randomly from the set.
 	 * 
 	 * @param chord4sDrivers
-	 * @param percentage
-	 *            a number between 0 to 100 where 0 is no nodes crash, 100 all
-	 *            nodes crash
+	 * @param numberOfNodes
+	 *            the number of nodes to immediately crash
 	 * @return the nodes that are still alive
 	 */
-	Set<Chord4SDriver> crashPercentageOfNodes(Set<Chord4SDriver> chord4sDrivers, int percentage);
+	Set<Chord4SDriver> crashNodes(Set<Chord4SDriver> chord4sDrivers, int numberOfNodes);
 	
 }

@@ -32,7 +32,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	 * Expect between 1 and this (inclusive) to be the number of services to
 	 * find when querying the network.
 	 */
-	private static final int expectedServicesInterval = 25;
+	private static final int expectedServicesInterval = 10;
 	
 	public DataAvailabilityEvaluation() throws Exception {
 		
@@ -41,15 +41,13 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 	@Override
 	public void start(int numberOfNodes, int maintenanceRounds) {
 		
+		EvaluationController controller = new EvaluationControllerImpl(random);
+		Set<Chord4SDriver> aliveNodes = createNetwork(numberOfNodes, controller, maintenanceRounds);
+		putServicesOnNodes(getNodes());
+		
+		int fiveP = (int) Math.floor(numberOfNodes * 0.05);
+		
 		for (int crashPercent : testCrashPercentages) {
-			EvaluationController controller = new EvaluationControllerImpl(random);
-			
-			createNetwork(numberOfNodes, controller, maintenanceRounds);
-			
-			putServicesOnNodes(getNodes());
-			
-			// crash a percentage of the nodes according to crashPercentage
-			Set<Chord4SDriver> aliveNodes = controller.crashPercentageOfNodes(getNodes(), crashPercent);
 			
 			// rebuild the network
 			runMaintenanceTasks(aliveNodes, maintenanceRounds);
@@ -62,10 +60,14 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			// display the results of the test
 			log.info("number of nodes: " + numberOfNodes + " crash percentage: " + crashPercent
 					+ " results: " + results);
+//			log.info(numberOfNodes + " " + crashPercent + " " + results);
 			
-			cleanupNodes();
+			// crash some nodes for the next round
+			aliveNodes = controller.crashNodes(getNodes(), fiveP);
 			
 		}
+		
+		cleanupNodes();
 	}
 	
 	/**
@@ -95,7 +97,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 			ServiceId serviceId = serviceFactory.getServiceId();
 			
 			// lookup the result
-//			int requiredResults = 1 + random.nextInt(expectedServicesInterval);
+			// int requiredResults = 1 +
+			// random.nextInt(expectedServicesInterval);
 			int requiredResults = expectedServicesInterval;
 			Set<Service> result = driver.lookup(serviceId, requiredResults);
 			
@@ -112,7 +115,7 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 		return queryResults;
 	}
 	
-	public static void main(String[] args) throws Exception  {
+	public static void main(String[] args) throws Exception {
 		AbstractEvaluation.configure();
 		new DataAvailabilityEvaluation().evaluate();
 	}
@@ -154,7 +157,8 @@ public class DataAvailabilityEvaluation extends AbstractEvaluation {
 		
 		@Override
 		public String toString() {
-			return "results: " + " successful: " + successfulQuery + " failed: " + failedQuery + " time taken: " + (System.currentTimeMillis() - startTime);
+			return "results: " + " successful: " + successfulQuery + " failed: " + failedQuery
+					+ " time taken: " + (System.currentTimeMillis() - startTime);
 		}
 	}
 }

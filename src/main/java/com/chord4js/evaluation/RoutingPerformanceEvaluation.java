@@ -21,7 +21,7 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 		super();
 	}
 	
-	private final Logger log = Logger.getLogger(DataAvailabilityEvaluation.class);
+	private final Logger log = Logger.getLogger(RoutingPerformanceEvaluation.class);
 	
 	@Override
 	public void start(int numberOfNodes, int maintenanceRounds) {
@@ -37,8 +37,8 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 			double averageHops = queryNodesAndComputeAverage(getNodes(), expected);
 			log.info("number of nodes: " + numberOfNodes + " services to get: "
 					+ expected + " average hops: " + averageHops);
+//			log.info(numberOfNodes + "	" + expected + "	" + averageHops);
 		}
-		
 	}
 	
 	/**
@@ -73,8 +73,6 @@ public class RoutingPerformanceEvaluation extends AbstractEvaluation {
 	public static void main(String[] args) throws ServiceException {
 		AbstractEvaluation.configure();
 		new RoutingPerformanceEvaluation().evaluate();
-		new RoutingPerformanceEvaluation();
-		
 	}
 	
 }

@@ -23,7 +23,14 @@ public class ServiceFactory {
 	
 	@Override
 	public String toString() {
-		return "layers: " + layers + " qos: " + qos;
+		StringBuilder builder = new StringBuilder();
+		
+		for (String layer : layers) {
+			builder.append(layer);
+			builder.append('.');
+		}
+		return builder.substring(0, builder.length() - 1);
+		
 	}
 	
 	/**

@@ -18,7 +18,7 @@ public abstract class AbstractEvaluation {
 	private final Logger log = Logger.getLogger(AbstractEvaluation.class);
 	
 	// network sizes for evaluations
-	public static final int NODES_2_7  = 1 <<  7;
+	public static final int NODES_2_7 = 1 << 7;
 	public static final int NODES_2_9 = 1 << 9;
 	public static final int NODES_2_11 = 1 << 11;
 	
@@ -59,7 +59,8 @@ public abstract class AbstractEvaluation {
 		System.setProperty("chord.properties.file", "config/chord4S.properties");
 		
 		// logging is configured in the chord.properties.file properties file
-//		System.setProperty("log4j.properties.file", "config/log4j.properties");
+		// System.setProperty("log4j.properties.file",
+		// "config/log4j.properties");
 		PropertiesLoader.loadPropertyFile();
 	}
 	
@@ -77,17 +78,18 @@ public abstract class AbstractEvaluation {
 	
 	/**
 	 * Run the evaluation with differing sizes of networks. Calls
-	 * {@link AbstractEvaluation#start(int)} with the network size.
+	 * {@link AbstractEvaluation#start(int, int)} with the network size and
+	 * number of maintenance rounds to run.
 	 */
 	public void evaluate() {
 		
-		start(NODES_2_7, 50);
+		start(NODES_2_7, 200);
 		cleanupNodes();
 		
-		start(NODES_2_9, 100);
+		start(NODES_2_9, 500);
 		cleanupNodes();
 		
-		start(NODES_2_11, 100);
+		start(NODES_2_11, 2000);
 		cleanupNodes();
 		
 	}
@@ -107,8 +109,8 @@ public abstract class AbstractEvaluation {
 	 * Cleanup/remove all nodes. Must create a new network afterwards.
 	 */
 	public void cleanupNodes() {
-	  if (nodes != null)
-	    nodes.forEach((n) -> n.crash());
+		if (nodes != null)
+			nodes.forEach((n) -> n.crash());
 		
 		// if performance is bad with calling leave() call crash() instead
 		// nodes.forEach((n) -> n.crash());
@@ -121,7 +123,8 @@ public abstract class AbstractEvaluation {
 	 * @param controller
 	 * @return
 	 */
-	protected Set<Chord4SDriver> createNetwork(int numberOfNodes, EvaluationController controller, int rounds) {
+	protected Set<Chord4SDriver> createNetwork(int numberOfNodes, EvaluationController controller,
+			int rounds) {
 		try {
 			setNodes(controller.createChord4SNetwork(numberOfNodes));
 		} catch (ServiceException e) {
@@ -131,10 +134,9 @@ public abstract class AbstractEvaluation {
 		
 		runMaintenanceTasks(nodes, rounds);
 		
-		
 		return getNodes();
 	}
-
+	
 	/**
 	 * Run the maintenance task a few times for the given nodes
 	 */
